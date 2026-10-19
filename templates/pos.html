@@ -47,11 +47,9 @@
                     </div>
                 </div>
 
-                <!-- Especiales -->
+                <!-- Especiales (Incluye Hamburguesa con Extra Papas y Botón Añadir Guardado) -->
                 <div class="tab-pane fade" id="especiales">
-                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoProducto('Especiales')" class="btn btn-info btn-sm mb-2 text-dark fw-bold">➕ Agregar Nuevo Especial</button>
-                    {% endif %}
                     <div class="row g-2">
                         {% for p in productos if p['categoria'] == 'Especiales' %}
                         <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn btn-info w-100 py-3 fw-bold text-dark">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
@@ -61,9 +59,7 @@
 
                 <!-- Extras -->
                 <div class="tab-pane fade" id="extras">
-                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoProducto('Extras')" class="btn btn-purple btn-sm mb-2 text-white fw-bold" style="background-color: #7209b7;">➕ Agregar Nuevo Extra</button>
-                    {% endif %}
                     <div class="row g-2">
                         {% for p in productos if p['categoria'] == 'Extras' %}
                         <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
@@ -73,9 +69,7 @@
 
                 <!-- Sodas Venta -->
                 <div class="tab-pane fade" id="sodas">
-                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoSabor()" class="btn btn-success btn-sm mb-2 fw-bold">➕ Agregar Nueva Bebida / Sabor</button>
-                    {% endif %}
                     <div class="row g-2">
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 5.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>5.00 Bs</button></div>
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 8.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>8.00 Bs</button></div>
@@ -110,7 +104,7 @@
                     </table>
                 </div>
 
-                <!-- Historial y Cierre (Con Opción de Imprimir Comprobantes) -->
+                <!-- Historial y Cierre (Accesible por Cajeros y Admin con Detalle QR/Efectivo) -->
                 <div class="tab-pane fade" id="reporte">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="text-info m-0">📊 Historial de Ventas y Cierre de Jornada</h6>
@@ -118,14 +112,21 @@
                     </div>
                     <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
                         <table class="table table-dark table-striped table-sm fs-7" id="tabla-ventas-historial">
-                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Detalle</th><th>Total</th><th>Acción</th></tr></thead>
+                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago (EF/QR)</th><th>Detalle</th><th>Total</th><th>Acción</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
                                 <tr>
                                     <td>{{ v['fecha'] }}</td>
                                     <td>{{ v['usuario'] }}</td>
                                     <td>{{ v['cliente'] }}</td>
-                                    <td>{{ v['metodo_pago'] }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if v['metodo_pago']=='Efectivo' else ('primary' if v['metodo_pago']=='QR' else 'warning text-dark') }}">
+                                            {{ v['metodo_pago'] }}
+                                        </span>
+                                        {% if v['monto_efectivo'] > 0 and v['monto_qr'] > 0 %}
+                                        <br><small>EF: {{ v['monto_efectivo'] }} | QR: {{ v['monto_qr'] }}</small>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ v['detalle'] }}</td>
                                     <td class="text-warning fw-bold">{{ v['total'] }} Bs</td>
                                     <td><button onclick="imprimirComprobanteVenta('{{ v['fecha'] }}', '{{ v['usuario'] }}', '{{ v['cliente'] }}', '{{ v['metodo_pago'] }}', '{{ v['detalle'] }}', {{ v['total'] }})" class="btn btn-outline-info btn-sm py-0 px-1">🖨️</button></td>
@@ -134,9 +135,7 @@
                             </tbody>
                         </table>
                     </div>
-                    {% if rol == 'admin' %}
                     <button onclick="ejecutarCierreJornada()" class="btn btn-danger btn-sm w-100 fw-bold py-2">📋 Ejecutar Cierre de Jornada y Reiniciar Caja</button>
-                    {% endif %}
                 </div>
 
                 {% if rol == 'admin' %}
@@ -406,15 +405,12 @@
 let carrito = [];
 const saboresDisponibles = {{ sabores | tojson }};
 
-// Sonido de notificación de caja registradora al realizar una venta
 function reproducirSonidoVenta() {
     try {
         let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         audio.volume = 0.8;
-        audio.play().catch(e => console.log("Audio bloqueado por políticas del navegador hasta interacción", e));
-    } catch (err) {
-        console.log("No se pudo reproducir el sonido", err);
-    }
+        audio.play().catch(e => console.log("Audio bloqueado", e));
+    } catch (err) {}
 }
 
 function evaluarMetodoPago() {
@@ -507,7 +503,6 @@ function cobrarPedido() {
     });
 }
 
-// Funciones para imprimir comprobantes individuales y reporte general
 function imprimirComprobanteVenta(fecha, cajero, cliente, metodoPago, detalle, total) {
     let ventana = window.open('', '_blank', 'width=400,height=600');
     ventana.document.write(`
@@ -602,7 +597,7 @@ function crearUsuario() {
     let username = document.getElementById("u_username").value;
     let password = document.getElementById("u_password").value;
     let nombre_completo = document.getElementById("u_nombre").value;
-    if(!username || !password || !nombre_completo) return alert("Completa todos los campos (Usuario, Contraseña y Nombre)");
+    if(!username || !password || !nombre_completo) return alert("Completa todos los campos");
     fetch("/api/usuarios/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
