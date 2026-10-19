@@ -27,12 +27,13 @@ def init_db():
         )
     ''')
     
-    # 2. Tabla de productos
+    # 2. Tabla de productos (con soporte para stock y precio)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL,
             precio REAL NOT NULL,
+            stock INTEGER DEFAULT 100,
             categoria TEXT NOT NULL
         )
     ''')
@@ -55,11 +56,22 @@ def init_db():
             "INSERT INTO usuarios (username, password, rol, nombre_completo) VALUES (?, ?, ?, ?)",
             ('yamil', hashed_password, 'admin', 'Yamil Callizaya')
         )
+        
+    # Productos iniciales de prueba si la tabla está vacía
+    cursor.execute("SELECT COUNT(*) FROM productos")
+    if cursor.fetchone()[0] == 0:
+        productos_iniciales = [
+            ('Pollo Broaster (Presa)', 18.00, 50, 'Pollos'),
+            ('Salchipapa Pukú', 25.00, 40, 'Fast Food'),
+            ('Hamburguesa Clásica', 20.00, 30, 'Hamburguesas'),
+            ('Refresco 2L', 15.00, 25, 'Bebidas')
+        ]
+        cursor.executemany("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     
     conn.commit()
     conn.close()
 
-# Inicializar Base de Datos al arrancar en Render / Gunicorn
+# Inicializar Base de Datos al arrancar en local o en Render
 with app.app_context():
     init_db()
 
@@ -99,11 +111,19 @@ def pos():
     
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM productos")
+    cursor.execute("SELECT id, nombre, precio, stock, categoria FROM productos")
     productos = cursor.fetchall()
     conn.close()
     
-    return render_template('pos.html', usuario=session['usuario'], rol=session['rol'], productos=productos)
+    # Diccionario de stock para evitar errores en plantillas que buscan stock['Nombre'] o stock['Pecho']
+    stock_diccionario = {p['nombre']: p['stock'] for p in productos}
+    stock_diccionario['Pecho'] = stock_diccionario.get('Pollo Broaster (Presa)', 50)
+    
+    return render_template('pos.html', 
+                           usuario=session['usuario'], 
+                           rol=session.get('rol', 'admin'), 
+                           productos=productos,
+                           stock=stock_diccionario)
 
 @app.route('/usuarios')
 def usuarios():
