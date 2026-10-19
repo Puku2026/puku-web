@@ -21,6 +21,7 @@
                 <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas</button></li>
                 <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial y Cierre</button></li>
                 {% if rol == 'admin' %}
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#cierres_archivados">📁 Cierres Archivados</button></li>
                 <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
                 <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios / Costos</button></li>
                 <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#usuarios">👥 Cajeros</button></li>
@@ -47,9 +48,11 @@
                     </div>
                 </div>
 
-                <!-- Especiales (Incluye Hamburguesa con Extra Papas y Botón Añadir Guardado) -->
+                <!-- Especiales (Botón oculto para cajeros) -->
                 <div class="tab-pane fade" id="especiales">
+                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoProducto('Especiales')" class="btn btn-info btn-sm mb-2 text-dark fw-bold">➕ Agregar Nuevo Especial</button>
+                    {% endif %}
                     <div class="row g-2">
                         {% for p in productos if p['categoria'] == 'Especiales' %}
                         <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn btn-info w-100 py-3 fw-bold text-dark">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
@@ -59,7 +62,9 @@
 
                 <!-- Extras -->
                 <div class="tab-pane fade" id="extras">
+                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoProducto('Extras')" class="btn btn-purple btn-sm mb-2 text-white fw-bold" style="background-color: #7209b7;">➕ Agregar Nuevo Extra</button>
+                    {% endif %}
                     <div class="row g-2">
                         {% for p in productos if p['categoria'] == 'Extras' %}
                         <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
@@ -69,7 +74,9 @@
 
                 <!-- Sodas Venta -->
                 <div class="tab-pane fade" id="sodas">
+                    {% if rol == 'admin' %}
                     <button onclick="abrirModalNuevoSabor()" class="btn btn-success btn-sm mb-2 fw-bold">➕ Agregar Nueva Bebida / Sabor</button>
+                    {% endif %}
                     <div class="row g-2">
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 5.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>5.00 Bs</button></div>
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 8.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>8.00 Bs</button></div>
@@ -104,15 +111,15 @@
                     </table>
                 </div>
 
-                <!-- Historial y Cierre (Accesible por Cajeros y Admin con Detalle QR/Efectivo) -->
+                <!-- Historial y Cierre -->
                 <div class="tab-pane fade" id="reporte">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="text-info m-0">📊 Historial de Ventas y Cierre de Jornada</h6>
-                        <button onclick="imprimirReporteGeneral()" class="btn btn-outline-warning btn-sm">🖨️ Imprimir / Guardar Reporte</button>
+                        <button onclick="imprimirReporteGeneral()" class="btn btn-outline-warning btn-sm">🖨️ Imprimir Reporte</button>
                     </div>
                     <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
                         <table class="table table-dark table-striped table-sm fs-7" id="tabla-ventas-historial">
-                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago (EF/QR)</th><th>Detalle</th><th>Total</th><th>Acción</th></tr></thead>
+                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Detalle</th><th>Total</th><th>Acción</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
                                 <tr>
@@ -123,9 +130,6 @@
                                         <span class="badge bg-{{ 'success' if v['metodo_pago']=='Efectivo' else ('primary' if v['metodo_pago']=='QR' else 'warning text-dark') }}">
                                             {{ v['metodo_pago'] }}
                                         </span>
-                                        {% if v['monto_efectivo'] > 0 and v['monto_qr'] > 0 %}
-                                        <br><small>EF: {{ v['monto_efectivo'] }} | QR: {{ v['monto_qr'] }}</small>
-                                        {% endif %}
                                     </td>
                                     <td>{{ v['detalle'] }}</td>
                                     <td class="text-warning fw-bold">{{ v['total'] }} Bs</td>
@@ -139,6 +143,26 @@
                 </div>
 
                 {% if rol == 'admin' %}
+                <!-- Cierres Archivados (Solo Admin) -->
+                <div class="tab-pane fade" id="cierres_archivados">
+                    <h6 class="text-warning mb-3">📁 Cierres de Jornada Archivados</h6>
+                    <div style="max-height: 350px; overflow-y: auto;">
+                        <table class="table table-dark table-striped table-sm fs-7">
+                            <thead><tr><th>ID</th><th>Fecha Cierre</th><th>Cajero</th><th>Acción</th></tr></thead>
+                            <tbody>
+                                {% for r in reportes %}
+                                <tr>
+                                    <td>#{{ r['id'] }}</td>
+                                    <td>{{ r['fecha_cierre'] }}</td>
+                                    <td>{{ r['cajero'] }}</td>
+                                    <td><button onclick="verReporteArchivado({{ r['id'] }}, `{{ r['contenido_reporte'] }}`)" class="btn btn-info btn-sm py-0 px-2 text-dark fw-bold">👁️ Ver Arqueo</button></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Mercado -->
                 <div class="tab-pane fade" id="mercado">
                     <h6 class="text-teal mb-3">🛒 Registrar Compra de Mercado e Insumos</h6>
@@ -158,7 +182,7 @@
                     </table>
                 </div>
 
-                <!-- Precios y Costos de Sodas -->
+                <!-- Precios y Costos -->
                 <div class="tab-pane fade" id="precios">
                     <h6 class="text-warning mb-2">⚙ Precios de Venta y Costos de Compra</h6>
                     <div class="row mb-3">
@@ -195,23 +219,11 @@
                 <!-- Usuarios / Cajeros -->
                 <div class="tab-pane fade" id="usuarios">
                     <h6 class="text-info mb-2">👥 Registrar Nuevos Cajeros / Usuarios</h6>
-                    <p class="text-muted fs-7 mb-3">Ingresa el usuario de acceso, su contraseña personal y el nombre completo que figurará en los reportes.</p>
                     <div class="row g-2 mb-3">
-                        <div class="col-md-3">
-                            <label class="form-label text-light fs-7 mb-1">Usuario (Login):</label>
-                            <input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Ej: juan1">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-light fs-7 mb-1">Contraseña:</label>
-                            <input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Clave secreta">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-light fs-7 mb-1">Nombre Completo:</label>
-                            <input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Ej: Juan Pérez">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button onclick="crearUsuario()" class="btn btn-success btn-sm w-100 fw-bold">➕ Crear</button>
-                        </div>
+                        <div class="col-md-3"><input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Usuario (Login)"></div>
+                        <div class="col-md-3"><input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Contraseña"></div>
+                        <div class="col-md-4"><input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Nombre Completo"></div>
+                        <div class="col-md-2"><button onclick="crearUsuario()" class="btn btn-success btn-sm w-100 fw-bold">➕ Crear</button></div>
                     </div>
                     <table class="table table-dark table-striped table-sm fs-7">
                         <thead><tr><th>Usuario</th><th>Nombre Completo</th><th>Rol</th><th>Acción</th></tr></thead>
@@ -232,7 +244,7 @@
                     </table>
                 </div>
 
-                <!-- Admin Stock Sodas (Solo Admin) -->
+                <!-- Admin Stock Sodas -->
                 <div class="tab-pane fade" id="stocksodas">
                     <h6 class="text-info mb-3">🥤 Control Exclusivo Admin - Stock de Bebidas</h6>
                     <div class="row">
@@ -341,76 +353,47 @@
   </div>
 </div>
 
-<!-- MODAL NUEVO PRODUCTO -->
-<div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<!-- MODAL VER REPORTE ARCHIVADO -->
+<div class="modal fade" id="modalReporteArchivado" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark text-light border-secondary">
       <div class="modal-header border-secondary">
-        <h5 class="modal-title text-warning" id="tituloModalProd">Agregar Producto</h5>
+        <h5 class="modal-title text-warning">📁 Arqueo de Caja Archivado</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="prod_cat">
-        <div class="mb-2">
-            <label class="form-label fs-7">Nombre del Producto:</label>
-            <input type="text" id="prod_nombre" class="form-control form-control-sm bg-dark text-light">
-        </div>
-        <div class="mb-2">
-            <label class="form-label fs-7">Precio de Venta (Bs):</label>
-            <input type="number" id="prod_precio" class="form-control form-control-sm bg-dark text-light">
-        </div>
-        <div class="mb-3">
-            <label class="form-label fs-7">Costo de Compra (Bs):</label>
-            <input type="number" id="prod_costo" class="form-control form-control-sm bg-dark text-light">
-        </div>
-        <button onclick="guardarNuevoProducto()" class="btn btn-primary w-100 btn-sm fw-bold">💾 Guardar Producto</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL NUEVO SABOR DE SODA -->
-<div class="modal fade" id="modalNuevoSabor" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-light border-secondary">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title text-success">Agregar Nueva Bebida / Sabor</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-            <label class="form-label fs-7">Nombre / Sabor:</label>
-            <input type="text" id="sabor_nombre" class="form-control form-control-sm bg-dark text-light">
-        </div>
-        <button onclick="guardarNuevoSabor()" class="btn btn-success w-100 btn-sm fw-bold">💾 Guardar Sabor</button>
+        <pre id="contenidoReporteArchivado" class="bg-black text-success p-3 rounded fs-7" style="white-space: pre-wrap; font-family: monospace;"></pre>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-.tab-puku {
-    background-color: #343a40 !important;
-    color: #f8f9fa !important;
-    font-weight: bold;
-    margin-right: 4px;
-}
-.tab-puku.active {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-}
+.tab-puku { background-color: #343a40 !important; color: #f8f9fa !important; font-weight: bold; margin-right: 4px; }
+.tab-puku.active { background-color: #ffc107 !important; color: #212529 !important; }
 </style>
 
 <script>
 let carrito = [];
 const saboresDisponibles = {{ sabores | tojson }};
 
-function reproducirSonidoVenta() {
-    try {
-        let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        audio.volume = 0.8;
-        audio.play().catch(e => console.log("Audio bloqueado", e));
-    } catch (err) {}
+// Notificación de sonido para el dispositivo del Administrador
+{% if rol == 'admin' %}
+setInterval(() => {
+    fetch('/api/check_nuevas_ventas')
+    .then(res => res.json())
+    .then(data => {
+        if (data.nueva_venta) {
+            let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log("Audio bloqueado por el navegador", e));
+        }
+    });
+}, 4000);
+{% endif %}
+
+function verReporteArchivado(id, contenido) {
+    document.getElementById("contenidoReporteArchivado").innerText = contenido;
+    new bootstrap.Modal(document.getElementById('modalReporteArchivado')).show();
 }
 
 function evaluarMetodoPago() {
@@ -441,37 +424,6 @@ function elegirSaborSoda(categoria, sabor, precio) {
     bootstrap.Modal.getInstance(document.getElementById('modalSaborSoda')).hide();
 }
 
-function abrirModalNuevoProducto(cat) {
-    document.getElementById("prod_cat").value = cat;
-    document.getElementById("tituloModalProd").innerText = `Agregar Nuevo Producto (${cat})`;
-    new bootstrap.Modal(document.getElementById('modalNuevoProducto')).show();
-}
-
-function guardarNuevoProducto() {
-    let cat = document.getElementById("prod_cat").value;
-    let nombre = document.getElementById("prod_nombre").value;
-    let precio = document.getElementById("prod_precio").value;
-    let costo = document.getElementById("prod_costo").value;
-    if(!nombre || !precio) return alert("Completa el nombre y precio");
-    fetch("/api/producto/add", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, precio, costo, categoria: cat })
-    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
-}
-
-function abrirModalNuevoSabor() {
-    new bootstrap.Modal(document.getElementById('modalNuevoSabor')).show();
-}
-
-function guardarNuevoSabor() {
-    let sabor = document.getElementById("sabor_nombre").value;
-    if(!sabor) return alert("Ingresa un nombre");
-    fetch("/api/sabor/add", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sabor })
-    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
-}
-
 function renderizarCarrito() {
     let tbody = document.getElementById("tabla-carrito"); tbody.innerHTML = ""; let total = 0;
     carrito.forEach((item, index) => {
@@ -495,11 +447,28 @@ function cobrarPedido() {
     fetch("/api/cobrar", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cliente: document.getElementById("cliente").value || "Cliente", tipo_pedido: document.getElementById("tipo_pedido").value, metodo_pago: m, nota: document.getElementById("nota_pedido").value, monto_efectivo: ef, monto_qr: qr, items: carrito, total })
-    }).then(res => res.json()).then(data => { 
-        reproducirSonidoVenta();
-        alert(data.message); 
-        vaciarCarrito(); 
-        location.reload(); 
+    }).then(res => res.json()).then(data => { alert(data.message); vaciarCarrito(); location.reload(); });
+}
+
+function ejecutarCierreJornada() {
+    if(!confirm("¿Deseas realizar el cierre de jornada y archivar el arqueo final?")) return;
+    fetch("/api/cierre/ejecutar", { method: "POST" })
+    .then(res => res.json())
+    .then(data => {
+        let ventana = window.open('', '_blank', 'width=500,height=700');
+        ventana.document.write(`
+            <html>
+            <head>
+                <title>Arqueo Final de Caja - Pollos PuKú</title>
+                <style>body { font-family: monospace; padding: 20px; white-space: pre-wrap; font-size: 13px; }</style>
+            </head>
+            <body>${data.reporte}
+            <script>window.onload = function() { window.print(); }<\/script>
+            </body>
+            </html>
+        `);
+        ventana.document.close();
+        location.reload();
     });
 }
 
@@ -509,138 +478,26 @@ function imprimirComprobanteVenta(fecha, cajero, cliente, metodoPago, detalle, t
         <html>
         <head>
             <title>Comprobante de Venta - Pollos PuKú</title>
-            <style>
-                body { font-family: monospace; padding: 15px; color: #000; width: 300px; margin: auto; }
-                h3, h4 { text-align: center; margin: 5px 0; }
-                hr { border: dashed 1px #000; }
-                .info { font-size: 12px; margin-bottom: 10px; }
-                .total { font-size: 16px; font-weight: bold; text-align: right; margin-top: 10px; }
-            </style>
+            <style>body { font-family: monospace; padding: 15px; width: 300px; margin: auto; } h3, h4 { text-align: center; } hr { border: dashed 1px #000; }</style>
         </head>
         <body>
             <h3>🍗 POLLOS PUKÚ 🍗</h3>
             <h4>Comprobante de Venta</h4>
             <hr>
-            <div class="info">
-                <strong>Fecha:</strong> ${fecha}<br>
-                <strong>Cajero:</strong> ${cajero}<br>
-                <strong>Cliente:</strong> ${cliente}<br>
-                <strong>Método de Pago:</strong> ${metodoPago}
-            </div>
+            <p><strong>Fecha:</strong> ${fecha}<br><strong>Cajero:</strong> ${cajero}<br><strong>Cliente:</strong> ${cliente}<br><strong>Pago:</strong> ${metodoPago}</p>
             <hr>
-            <div class="info">
-                <strong>Detalle:</strong><br>
-                ${detalle}
-            </div>
+            <p><strong>Detalle:</strong><br>${detalle}</p>
             <hr>
-            <div class="total">
-                TOTAL: ${total.toFixed(2)} Bs
-            </div>
-            <br>
-            <p style="text-align: center; font-size: 11px;">¡Gracias por su preferencia!</p>
-            <script>
-                window.onload = function() { window.print(); window.close(); }
-            <\/script>
+            <h3 style="text-align: right;">TOTAL: ${total.toFixed(2)} Bs</h3>
+            <script>window.onload = function() { window.print(); window.close(); }<\/script>
         </body>
         </html>
     `);
     ventana.document.close();
-}
-
-function imprimirReporteGeneral() {
-    let contenidoTabla = document.getElementById("tabla-ventas-historial").outerHTML;
-    let ventana = window.open('', '_blank', 'width=800,height=600');
-    ventana.document.write(`
-        <html>
-        <head>
-            <title>Reporte de Historial de Ventas - Pollos PuKú</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
-                h2 { text-align: center; color: #b22222; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-                th { background-color: #f4f4f4; }
-            </style>
-        </head>
-        <body>
-            <h2>🍗 POLLOS PUKÚ - REPORTE DE HISTORIAL DE VENTAS 🍗</h2>
-            <p><strong>Fecha de impresión:</strong> ${new Date().toLocaleString()}</p>
-            ${contenidoTabla}
-            <script>
-                window.onload = function() { window.print(); window.close(); }
-            <\/script>
-        </body>
-        </html>
-    `);
-    ventana.document.close();
-}
-
-function agregarMercado() {
-    let insumo = document.getElementById("m_insumo").value, cant = document.getElementById("m_cant").value, costo = document.getElementById("m_costo").value;
-    if(!insumo || !costo) return;
-    fetch("/api/mercado/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ insumo, cantidad: cant, costo }) }).then(() => location.reload());
-}
-
-function eliminarMercado(id) { fetch(`/api/mercado/delete/${id}`, { method: "DELETE" }).then(() => location.reload()); }
-
-function anotarCena() {
-    let sel = document.getElementById("c_producto");
-    let es_soda = sel.options[sel.selectedIndex].dataset.soda;
-    fetch("/api/cena/add", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ producto: sel.value, cantidad: document.getElementById("c_cant").value, costo_u: sel.options[sel.selectedIndex].dataset.costo, es_soda: es_soda }) 
-    }).then(() => location.reload());
-}
-
-function crearUsuario() {
-    let username = document.getElementById("u_username").value;
-    let password = document.getElementById("u_password").value;
-    let nombre_completo = document.getElementById("u_nombre").value;
-    if(!username || !password || !nombre_completo) return alert("Completa todos los campos");
-    fetch("/api/usuarios/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, nombre_completo, rol: "cajero" })
-    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
-}
-
-function eliminarUsuario(id) {
-    if(confirm("¿Eliminar este usuario?")) {
-        fetch(`/api/usuarios/delete/${id}`, { method: "DELETE" }).then(() => location.reload());
-    }
-}
-
-function guardarPrecios() {
-    let precios = {}, costos = {};
-    {% for p in productos %}
-    precios["{{ p['id'] }}"] = document.getElementById("p_venta_{{ p['id'] }}").value;
-    costos["{{ p['id'] }}"] = document.getElementById("p_costo_{{ p['id'] }}").value;
-    {% endfor %}
-    let costos_sodas = {
-        'Pekes (Sodas)': document.getElementById("costo_pekes").value,
-        'Personal (Sodas)': document.getElementById("costo_personales").value,
-        '2 L (Sodas)': document.getElementById("costo_2l").value
-    };
-    fetch("/api/precios/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ precios, costos, costos_sodas }) }).then(() => { alert("Precios y Costos Actualizados"); location.reload(); });
 }
 
 function modificarStock(item, delta) {
     fetch("/api/stock/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item, delta }) }).then(() => location.reload());
-}
-
-function modificarSodaAdmin(categoria, sabor, delta) {
-    fetch("/api/soda/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ categoria, sabor, delta }) })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success") { location.reload(); }
-        else { alert(data.message); }
-    });
-}
-
-function ejecutarCierreJornada() {
-    if(!confirm("¿Deseas realizar el cierre de jornada, limpiar el historial de ventas y reiniciar el stock de cocina?")) return;
-    fetch("/api/cierre/ejecutar", { method: "POST" }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
 }
 </script>
 {% endblock %}
