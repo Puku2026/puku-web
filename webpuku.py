@@ -129,46 +129,49 @@ def init_db():
     for c_clave, c_val in costos_sodas_iniciales:
         cursor.execute("INSERT OR IGNORE INTO costos_config (clave, costo) VALUES (?, ?)", (c_clave, c_val))
 
-    cursor.execute("SELECT COUNT(*) FROM productos")
-    if cursor.fetchone()[0] == 0:
-        productos_iniciales = [
-            ('Eco Pierna', 15.00, 9.50, 20, 'Broaste'),
-            ('Eco Contra', 15.00, 9.50, 20, 'Broaste'),
-            ('Eco Pecho', 16.00, 9.50, 20, 'Broaste'),
-            ('Eco Ala', 16.00, 9.50, 20, 'Broaste'),
-            ('¼ Pecho Broaste', 30.00, 14.00, 20, 'Broaste'),
-            ('¼ Pierna Broaste', 30.00, 14.00, 20, 'Broaste'),
-            ('½ Pollo Broaste', 55.00, 28.00, 15, 'Broaste'),
-            ('1 Pollo Broaste', 110.00, 56.00, 10, 'Broaste'),
-            ('Eco Pierna Brasa', 15.00, 9.50, 20, 'Brasa'),
-            ('Eco Contra Brasa', 15.00, 9.50, 20, 'Brasa'),
-            ('Eco Pecho Brasa', 16.00, 9.50, 20, 'Brasa'),
-            ('Eco Ala Brasa', 16.00, 9.50, 20, 'Brasa'),
-            ('¼ Pecho Brasa', 30.00, 14.00, 20, 'Brasa'),
-            ('¼ Pierna Brasa', 30.00, 14.00, 20, 'Brasa'),
-            ('½ Pollo Brasa', 55.00, 28.00, 15, 'Brasa'),
-            ('1 Pollo Brasa', 110.00, 56.00, 10, 'Brasa'),
-            ('Hamburguesa Simple', 17.00, 14.00, 30, 'Especiales'),
-            ('Hamburguesa Clásica', 20.00, 14.00, 30, 'Especiales'),
-            ('Hamburguesa Doble', 30.00, 18.00, 30, 'Especiales'),
-            ('Salchipapas', 15.00, 10.00, 30, 'Especiales'),
-            ('Salchiburguer', 30.00, 17.00, 20, 'Especiales'),
-            ('Salchipollo', 25.00, 14.50, 20, 'Especiales'),
-            ('Presa Extra', 10.00, 4.50, 50, 'Extras'),
-            ('Porcion Papa', 6.00, 2.50, 50, 'Extras'),
-            ('Porcion Arroz', 6.00, 2.50, 50, 'Extras'),
-            ('Pecho', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Contra', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Pierna', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Ala', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Pecho Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Contra Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Pierna Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Ala Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Hamburguesas', 0.0, 14.0, 10, 'Stock Cocina'),
-            ('Salchipapas', 0.0, 10.0, 10, 'Stock Cocina')
-        ]
-        cursor.executemany("INSERT INTO productos (nombre, precio, costo, stock, categoria) VALUES (?, ?, ?, ?, ?)", productos_iniciales)
+    productos_iniciales = [
+        ('Eco Pierna', 15.00, 9.50, 20, 'Broaste'),
+        ('Eco Contra', 15.00, 9.50, 20, 'Broaste'),
+        ('Eco Pecho', 16.00, 9.50, 20, 'Broaste'),
+        ('Eco Ala', 16.00, 9.50, 20, 'Broaste'),
+        ('¼ Pecho Broaste', 30.00, 14.00, 20, 'Broaste'),
+        ('¼ Pierna Broaste', 30.00, 14.00, 20, 'Broaste'),
+        ('½ Pollo Broaste', 55.00, 28.00, 15, 'Broaste'),
+        ('1 Pollo Broaste', 110.00, 56.00, 10, 'Broaste'),
+        ('Eco Pierna Brasa', 15.00, 9.50, 20, 'Brasa'),
+        ('Eco Contra Brasa', 15.00, 9.50, 20, 'Brasa'),
+        ('Eco Pecho Brasa', 16.00, 9.50, 20, 'Brasa'),
+        ('Eco Ala Brasa', 16.00, 9.50, 20, 'Brasa'),
+        ('¼ Pecho Brasa', 30.00, 14.00, 20, 'Brasa'),
+        ('¼ Pierna Brasa', 30.00, 14.00, 20, 'Brasa'),
+        ('½ Pollo Brasa', 55.00, 28.00, 15, 'Brasa'),
+        ('1 Pollo Brasa', 110.00, 56.00, 10, 'Brasa'),
+        ('Hamburguesa Simple', 17.00, 14.00, 30, 'Especiales'),
+        ('Hamburguesa Clásica', 20.00, 14.00, 30, 'Especiales'),
+        ('Hamburguesa Doble', 30.00, 18.00, 30, 'Especiales'),
+        ('Salchipapas', 15.00, 10.00, 30, 'Especiales'),
+        ('Salchiburguer', 30.00, 17.00, 20, 'Especiales'),
+        ('Salchipollo', 25.00, 14.50, 20, 'Especiales'),
+        ('Presa Extra', 10.00, 4.50, 50, 'Extras'),
+        ('Porcion Papa', 6.00, 2.50, 50, 'Extras'),
+        ('Porcion Arroz', 6.00, 2.50, 50, 'Extras'),
+        ('Pecho', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Contra', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Pierna', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Ala', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Pecho Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Contra Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Pierna Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Ala Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+        ('Hamburguesas', 0.0, 14.0, 10, 'Stock Cocina'),
+        ('Salchipapas', 0.0, 10.0, 10, 'Stock Cocina')
+    ]
+    
+    for p in productos_iniciales:
+        cursor.execute("""
+            INSERT OR IGNORE INTO productos (nombre, precio, costo, stock, categoria) 
+            VALUES (?, ?, ?, ?, ?)
+        """, p)
     
     conn.commit()
     conn.close()
@@ -465,7 +468,6 @@ def api_cierre_ejecutar():
     cursor.execute("DELETE FROM ventas")
     cursor.execute("DELETE FROM cenas")
     cursor.execute("DELETE FROM mercado")
-    # Solo reinicia las presas de pollo, conservando hamburguesas, salchipapas y bebidas
     cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina' AND nombre NOT IN ('Hamburguesas', 'Salchipapas')")
     conn.commit()
     conn.close()
