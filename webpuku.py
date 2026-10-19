@@ -149,6 +149,7 @@ def init_db():
         ('Hamburguesa Simple', 17.00, 14.00, 30, 'Especiales'),
         ('Hamburguesa Clásica', 20.00, 14.00, 30, 'Especiales'),
         ('Hamburguesa Doble', 30.00, 18.00, 30, 'Especiales'),
+        ('Hamburguesa con Extra Papas', 25.00, 16.00, 30, 'Especiales'),
         ('Salchipapas', 15.00, 10.00, 30, 'Especiales'),
         ('Salchiburguer', 30.00, 17.00, 20, 'Especiales'),
         ('Salchipollo', 25.00, 14.50, 20, 'Especiales'),
@@ -262,7 +263,7 @@ def pos():
 
 @app.route('/api/producto/add', methods=['POST'])
 def api_producto_add():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
     data = request.get_json()
     nombre = data.get('nombre')
     precio = float(data.get('precio', 0.0))
@@ -276,14 +277,14 @@ def api_producto_add():
                        (nombre, precio, costo, categoria))
         conn.commit()
         conn.close()
-        return jsonify({'status': 'success', 'message': f'Producto {nombre} agregado con éxito'})
+        return jsonify({'status': 'success', 'message': f'Producto {nombre} agregado y guardado con éxito'})
     except sqlite3.IntegrityError:
         conn.close()
         return jsonify({'status': 'error', 'message': 'El producto ya existe'}), 400
 
 @app.route('/api/sabor/add', methods=['POST'])
 def api_sabor_add():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
     data = request.get_json()
     sabor = data.get('sabor')
     if not sabor: return jsonify({'status': 'error', 'message': 'El sabor no puede estar vacío'}), 400
@@ -462,7 +463,7 @@ def api_usuarios_delete(user_id):
 
 @app.route('/api/cierre/ejecutar', methods=['POST'])
 def api_cierre_ejecutar():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM ventas")
