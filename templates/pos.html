@@ -1,20 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
-    <!-- PANEL IZQUIERDO: TODAS LAS PESTAÑAS COMPLETAS -->
+    <!-- PANEL IZQUIERDO: TODAS LAS PESTAÑAS -->
     <div class="col-md-8">
         <div class="card card-dark p-3 mb-3">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item"><button class="nav-link active bg-warning text-dark fw-bold me-1" id="tab-broaste" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-brasa" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-especiales" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-extras" data-bs-toggle="pill" data-bs-target="#extras">➕ Extras</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-sodas" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-mercado" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
+                <li class="nav-item"><button class="nav-link active bg-warning text-dark fw-bold me-1" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#extras">➕ Extras</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
                 {% if rol == 'admin' %}
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-precios" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-cenas" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas y Costos</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-reporte" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial Ventas</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas y Costos</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial y Cierre</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#stocksodas">🥤 Admin Sodas</button></li>
                 {% endif %}
             </ul>
 
@@ -33,7 +34,7 @@
                     </div>
                 </div>
 
-                <!-- A la Brasa -->
+                <!-- Brasa -->
                 <div class="tab-pane fade" id="brasa">
                     <div class="row g-2">
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pecho Brasa', 30)" class="btn btn-danger w-100 py-3 fw-bold text-white">¼ Pecho Brasa<br>30 Bs</button></div>
@@ -58,18 +59,18 @@
                 <!-- Extras -->
                 <div class="tab-pane fade" id="extras">
                     <div class="row g-2">
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Presa Extra', 10)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Presa Extra<br>10 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Papa', 6)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Papa<br>6 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Arroz', 6)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Arroz<br>6 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Presa Extra', 10)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Presa Extra<br>10 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Papa', 6)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Papa<br>6 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Arroz', 6)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Arroz<br>6 Bs</button></div>
                     </div>
                 </div>
 
-                <!-- Sodas -->
+                <!-- Sodas Venta -->
                 <div class="tab-pane fade" id="sodas">
                     <div class="row g-2">
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 5.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>5.00 Bs</button></div>
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 8.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>8.00 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('2 Litros', 20.0)" class="btn btn-purple w-100 py-4 fw-bold text-white" style="background-color: #7209b7;">🥤 2 Litros<br>20.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('2 Litros', 20.0)" class="btn text-white w-100 py-4 fw-bold" style="background-color: #7209b7;">🥤 2 Litros<br>20.00 Bs</button></div>
                     </div>
                 </div>
 
@@ -77,21 +78,16 @@
                 <div class="tab-pane fade" id="mercado">
                     <h6 class="text-teal mb-3">🛒 Registrar Compra de Mercado e Insumos</h6>
                     <div class="row g-2 mb-3">
-                        <div class="col-4"><input type="text" id="m_insumo" class="form-control form-control-sm bg-dark text-light" placeholder="Insumo (Ej: Papas)"></div>
-                        <div class="col-3"><input type="text" id="m_cant" class="form-control form-control-sm bg-dark text-light" placeholder="Cantidad / Peso"></div>
+                        <div class="col-4"><input type="text" id="m_insumo" class="form-control form-control-sm bg-dark text-light" placeholder="Insumo"></div>
+                        <div class="col-3"><input type="text" id="m_cant" class="form-control form-control-sm bg-dark text-light" placeholder="Cantidad"></div>
                         <div class="col-3"><input type="number" id="m_costo" class="form-control form-control-sm bg-dark text-light" placeholder="Costo (Bs)"></div>
                         <div class="col-2"><button onclick="agregarMercado()" class="btn btn-success btn-sm w-100">➕ Añadir</button></div>
                     </div>
                     <table class="table table-dark table-striped table-sm fs-7">
-                        <thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo (Bs)</th><th>Acción</th></tr></thead>
+                        <thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo</th><th>Acción</th></tr></thead>
                         <tbody>
                             {% for item in mercado %}
-                            <tr>
-                                <td>{{ item['insumo'] }}</td>
-                                <td>{{ item['cantidad'] }}</td>
-                                <td>{{ item['costo'] }} Bs</td>
-                                <td><button onclick="eliminarMercado({{ item['id'] }})" class="btn btn-danger btn-sm py-0">✕</button></td>
-                            </tr>
+                            <tr><td>{{ item['insumo'] }}</td><td>{{ item['cantidad'] }}</td><td>{{ item['costo'] }} Bs</td><td><button onclick="eliminarMercado({{ item['id'] }})" class="btn btn-danger btn-sm py-0">✕</button></td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -100,10 +96,10 @@
                 {% if rol == 'admin' %}
                 <!-- Precios -->
                 <div class="tab-pane fade" id="precios">
-                    <h6 class="text-warning mb-3">⚙ Editar Precios de Venta y Costos de Compra</h6>
-                    <div style="max-height: 350px; overflow-y: auto;">
+                    <h6 class="text-warning mb-3">⚙ Editar Precios y Costos</h6>
+                    <div style="max-height: 320px; overflow-y: auto;">
                         <table class="table table-dark table-sm fs-7">
-                            <thead><tr><th>Producto</th><th>Precio Venta (Bs)</th><th>Costo Compra (Bs)</th></tr></thead>
+                            <thead><tr><th>Producto</th><th>Precio Venta</th><th>Costo Compra</th></tr></thead>
                             <tbody>
                                 {% for p in productos %}
                                 <tr>
@@ -115,12 +111,12 @@
                             </tbody>
                         </table>
                     </div>
-                    <button onclick="guardarPrecios()" class="btn btn-primary btn-sm mt-2">💾 Guardar Precios y Costos</button>
+                    <button onclick="guardarPrecios()" class="btn btn-primary btn-sm mt-2">💾 Guardar Cambios</button>
                 </div>
 
-                <!-- Cenas y Costos -->
+                <!-- Cenas -->
                 <div class="tab-pane fade" id="cenas">
-                    <h6 class="text-danger mb-3">🌙 Anotar Cenas / Sobrantes del Turno</h6>
+                    <h6 class="text-danger mb-3">🌙 Anotar Sobrantes / Cenas</h6>
                     <div class="row g-2 mb-3">
                         <div class="col-5">
                             <select id="c_producto" class="form-select form-select-sm bg-dark text-light">
@@ -129,39 +125,55 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="col-3"><input type="number" id="c_cant" class="form-control form-control-sm bg-dark text-light" value="1" placeholder="Cant"></div>
-                        <div class="col-4"><button onclick="anotarCena()" class="btn btn-purple btn-sm w-100 text-white" style="background-color: #7209b7;">➕ Anotar Cena</button></div>
+                        <div class="col-3"><input type="number" id="c_cant" class="form-control form-control-sm bg-dark text-light" value="1"></div>
+                        <div class="col-4"><button onclick="anotarCena()" class="btn btn-sm w-100 text-white" style="background-color: #7209b7;">➕ Anotar</button></div>
                     </div>
                     <table class="table table-dark table-sm fs-7">
-                        <thead><tr><th>Producto</th><th>Cant</th><th>Costo U.</th><th>Subtotal</th></tr></thead>
+                        <thead><tr><th>Producto</th><th>Cant</th><th>Subtotal</th></tr></thead>
                         <tbody>
                             {% for c in cenas %}
-                            <tr><td>{{ c['producto'] }}</td><td>{{ c['cantidad'] }}</td><td>{{ c['costo_u'] }} Bs</td><td>{{ c['subtotal'] }} Bs</td></tr>
+                            <tr><td>{{ c['producto'] }}</td><td>{{ c['cantidad'] }}</td><td>{{ c['subtotal'] }} Bs</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Historial Ventas -->
+                <!-- Reportes y Cierre -->
                 <div class="tab-pane fade" id="reporte">
-                    <h6 class="text-info mb-3">📊 Historial de Ventas del Día</h6>
-                    <div style="max-height: 300px; overflow-y: auto;">
+                    <h6 class="text-info mb-3">📊 Historial y Cierre de Jornada</h6>
+                    <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
                         <table class="table table-dark table-striped table-sm fs-7">
-                            <thead><tr><th>Hora/Fecha</th><th>Cajero</th><th>Cliente</th><th>Tipo</th><th>Pago</th><th>Detalle</th><th>Total</th></tr></thead>
+                            <thead><tr><th>Fecha/Hora</th><th>Cliente</th><th>Pago</th><th>Total</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
-                                <tr>
-                                    <td>{{ v['fecha'] }}</td>
-                                    <td>{{ v['usuario'] }}</td>
-                                    <td>{{ v['cliente'] }}</td>
-                                    <td>{{ v['tipo_pedido'] }}</td>
-                                    <td>{{ v['metodo_pago'] }}</td>
-                                    <td>{{ v['detalle'] }}</td>
-                                    <td class="text-end fw-bold text-warning">{{ v['total'] }} Bs</td>
-                                </tr>
+                                <tr><td>{{ v['fecha'] }}</td><td>{{ v['cliente'] }}</td><td>{{ v['metodo_pago'] }}</td><td class="text-warning fw-bold">{{ v['total'] }} Bs</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                    <button onclick="ejecutarCierreJornada()" class="btn btn-danger btn-sm w-100 fw-bold py-2">📋 Ejecutar Cierre de Jornada y Reiniciar Caja</button>
+                </div>
+
+                <!-- Admin Stock Sodas (Solo Admin) -->
+                <div class="tab-pane fade" id="stocksodas">
+                    <h6 class="text-info mb-3">🥤 Control Exclusivo Admin - Stock de Bebidas</h6>
+                    <div class="row">
+                        {% for cat, sabores in stock_sodas.items() %}
+                        <div class="col-md-4">
+                            <span class="text-warning fw-bold">{{ cat }}</span>
+                            <ul class="list-group list-group-flush bg-dark fs-7 mb-2" style="max-height: 200px; overflow-y: auto;">
+                                {% for sab, cant in sabores.items() %}
+                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center py-1">
+                                    {{ sab }}: <strong id="soda-{{ cat }}-{{ sab }}">{{ cant }}</strong>
+                                    <div>
+                                        <button onclick="modificarSodaAdmin('{{ cat }}', '{{ sab }}', -1)" class="btn btn-danger btn-sm py-0 px-1">-</button>
+                                        <button onclick="modificarSodaAdmin('{{ cat }}', '{{ sab }}', 1)" class="btn btn-success btn-sm py-0 px-1">+</button>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endif %}
@@ -169,17 +181,17 @@
         </div>
     </div>
 
-    <!-- PANEL DERECHO: CARRITO, PAGO MIXTO Y NOTA -->
+    <!-- PANEL DERECHO: CARRITO -->
     <div class="col-md-4">
         <div class="card card-dark p-3 mb-3">
             <h5 class="text-accent">Pedido Actual</h5>
             <div class="mb-2">
-                <label class="form-label text-light fs-7 mb-1">Cajero: <strong>{{ usuario }}</strong> | Cliente / Ref:</label>
+                <label class="form-label text-light fs-7 mb-1">Cajero: <strong>{{ usuario }}</strong> | Cliente:</label>
                 <input type="text" id="cliente" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Ej: Torres">
             </div>
             <div class="row mb-2">
                 <div class="col-6">
-                    <label class="form-label text-light fs-7 mb-1">Tipo Pedido:</label>
+                    <label class="form-label text-light fs-7 mb-1">Tipo:</label>
                     <select id="tipo_pedido" class="form-select form-select-sm bg-dark text-light border-secondary">
                         <option value="Para Llevar">Para Llevar</option>
                         <option value="Mesa">Mesa</option>
@@ -197,22 +209,16 @@
                 </div>
             </div>
 
-            <!-- Desglose Pago Mixto -->
             <div id="panel_mixto" class="row g-2 mb-2 d-none">
-                <div class="col-6">
-                    <input type="number" id="pago_efectivo" class="form-control form-control-sm bg-dark text-light border-info" placeholder="Monto EF (Bs)">
-                </div>
-                <div class="col-6">
-                    <input type="number" id="pago_qr" class="form-control form-control-sm bg-dark text-light border-primary" placeholder="Monto QR (Bs)">
-                </div>
+                <div class="col-6"><input type="number" id="pago_efectivo" class="form-control form-control-sm bg-dark text-light border-info" placeholder="EF (Bs)"></div>
+                <div class="col-6"><input type="number" id="pago_qr" class="form-control form-control-sm bg-dark text-light border-primary" placeholder="QR (Bs)"></div>
             </div>
 
             <div class="mb-2">
-                <input type="text" id="nota_pedido" class="form-control form-control-sm bg-dark text-warning border-secondary" placeholder="Nota / Obs (Ej: Sin Arroz)">
+                <input type="text" id="nota_pedido" class="form-control form-control-sm bg-dark text-warning border-secondary" placeholder="Nota / Obs">
             </div>
 
-            <!-- Tabla Carrito -->
-            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 160px; max-height: 220px; overflow-y: auto;">
+            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 150px; max-height: 200px; overflow-y: auto;">
                 <table class="table table-dark table-sm fs-7 mb-0">
                     <thead><tr><th>Prod</th><th class="text-center">Cant</th><th class="text-end">Subt</th><th></th></tr></thead>
                     <tbody id="tabla-carrito"></tbody>
@@ -226,7 +232,7 @@
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
 
-        <!-- CONTROL DE STOCK SECUNDARIO -->
+        <!-- Stock Cocina -->
         <div class="card card-dark p-3">
             <h6 class="text-info mb-2">📦 Stock Cocina (Presas)</h6>
             <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
@@ -247,7 +253,7 @@
     </div>
 </div>
 
-<!-- MODAL SELECCIONAR SABOR DE SODA -->
+<!-- MODAL SODA -->
 <div class="modal fade" id="modalSaborSoda" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark text-light border-secondary">
@@ -255,89 +261,48 @@
         <h5 class="modal-title text-info" id="tituloModalSabor">Seleccionar Sabor</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <div class="row g-2" id="listaSaboresGrid"></div>
-      </div>
+      <div class="modal-body"><div class="row g-2" id="listaSaboresGrid"></div></div>
     </div>
   </div>
 </div>
 
 <script>
 let carrito = [];
-const saboresDisponibles = [
-    "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
-    "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
-    "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", 
-    "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"
-];
+const saboresDisponibles = ["Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"];
 
 function evaluarMetodoPago() {
     let m = document.getElementById("metodo_pago").value;
     let p = document.getElementById("panel_mixto");
-    if (m === "Mixto") p.classList.remove("d-none");
-    else p.classList.add("d-none");
+    if (m === "Mixto") p.classList.remove("d-none"); else p.classList.add("d-none");
 }
 
 function agregarAlCarrito(nombre, precio, categoriaSoda = null, saborSoda = null) {
     let nombreMostrar = saborSoda ? `${nombre} (${saborSoda})` : nombre;
     let item = carrito.find(i => i.nombre === nombreMostrar);
-    if (item) {
-        item.cant++;
-        item.subtotal = item.cant * precio;
-    } else {
-        carrito.push({ 
-            nombre: nombreMostrar, 
-            nombre_base: nombre,
-            precio: precio, 
-            cant: 1, 
-            subtotal: precio,
-            categoria_soda: categoriaSoda,
-            sabor_soda: saborSoda
-        });
-    }
+    if (item) { item.cant++; item.subtotal = item.cant * precio; }
+    else { carrito.push({ nombre: nombreMostrar, nombre_base: nombre, precio: precio, cant: 1, subtotal: precio, categoria_soda: categoriaSoda, sabor_soda: saborSoda }); }
     renderizarCarrito();
 }
 
 function abrirSelectorSoda(categoria, precio) {
     document.getElementById("tituloModalSabor").innerText = `Seleccionar Sabor - ${categoria} (${precio} Bs)`;
-    let grid = document.getElementById("listaSaboresGrid");
-    grid.innerHTML = "";
-    
+    let grid = document.getElementById("listaSaboresGrid"); grid.innerHTML = "";
     saboresDisponibles.forEach(sabor => {
-        grid.innerHTML += `
-            <div class="col-6">
-                <button onclick="elegirSaborSoda('${categoria}', '${sabor}', ${precio})" class="btn btn-outline-light w-100 py-2 text-start mb-1 text-truncate">
-                    ${sabor}
-                </button>
-            </div>
-        `;
+        grid.innerHTML += `<div class="col-6"><button onclick="elegirSaborSoda('${categoria}', '${sabor}', ${precio})" class="btn btn-outline-light w-100 py-2 text-start mb-1 text-truncate">${sabor}</button></div>`;
     });
-    let modal = new bootstrap.Modal(document.getElementById('modalSaborSoda'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('modalSaborSoda')).show();
 }
 
 function elegirSaborSoda(categoria, sabor, precio) {
-    let nombreBase = `Soda ${categoria}`;
-    agregarAlCarrito(nombreBase, precio, categoria, sabor);
-    let modalEl = document.getElementById('modalSaborSoda');
-    let modal = bootstrap.Modal.getInstance(modalEl);
-    modal.hide();
+    agregarAlCarrito(`Soda ${categoria}`, precio, categoria, sabor);
+    bootstrap.Modal.getInstance(document.getElementById('modalSaborSoda')).hide();
 }
 
 function renderizarCarrito() {
-    let tbody = document.getElementById("tabla-carrito");
-    tbody.innerHTML = "";
-    let total = 0;
+    let tbody = document.getElementById("tabla-carrito"); tbody.innerHTML = ""; let total = 0;
     carrito.forEach((item, index) => {
         total += item.subtotal;
-        tbody.innerHTML += `
-            <tr>
-                <td>${item.nombre}</td>
-                <td class="text-center">${item.cant}</td>
-                <td class="text-end">${item.subtotal.toFixed(2)} Bs</td>
-                <td class="text-end"><button onclick="eliminarItem(${index})" class="btn btn-link text-danger p-0">✕</button></td>
-            </tr>
-        `;
+        tbody.innerHTML += `<tr><td>${item.nombre}</td><td class="text-center">${item.cant}</td><td class="text-end">${item.subtotal.toFixed(2)} Bs</td><td class="text-end"><button onclick="eliminarItem(${index})" class="btn btn-link text-danger p-0">✕</button></td></tr>`;
     });
     document.getElementById("total-txt").innerText = `Total: ${total.toFixed(2)} Bs`;
 }
@@ -351,63 +316,25 @@ function cobrarPedido() {
     let m = document.getElementById("metodo_pago").value;
     let ef = parseFloat(document.getElementById("pago_efectivo").value || 0);
     let qr = parseFloat(document.getElementById("pago_qr").value || 0);
-
-    if (m === "Mixto" && Math.abs((ef + qr) - total) > 0.01) {
-        alert(`Suma Mixta (${ef + qr} Bs) no coincide con el total (${total} Bs)`);
-        return;
-    }
-
-    let payload = {
-        cliente: document.getElementById("cliente").value || "Sin Nombre",
-        tipo_pedido: document.getElementById("tipo_pedido").value,
-        metodo_pago: m,
-        nota: document.getElementById("nota_pedido").value,
-        monto_efectivo: ef,
-        monto_qr: qr,
-        items: carrito,
-        total: total
-    };
+    if (m === "Mixto" && Math.abs((ef + qr) - total) > 0.01) { alert("La suma mixta no coincide con el total."); return; }
 
     fetch("/api/cobrar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        vaciarCarrito();
-        document.getElementById("cliente").value = "";
-        location.reload();
-    });
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cliente: document.getElementById("cliente").value || "Cliente", tipo_pedido: document.getElementById("tipo_pedido").value, metodo_pago: m, nota: document.getElementById("nota_pedido").value, monto_efectivo: ef, monto_qr: qr, items: carrito, total })
+    }).then(res => res.json()).then(data => { alert(data.message); vaciarCarrito(); location.reload(); });
 }
 
 function agregarMercado() {
-    let insumo = document.getElementById("m_insumo").value;
-    let cant = document.getElementById("m_cant").value;
-    let costo = document.getElementById("m_costo").value;
+    let insumo = document.getElementById("m_insumo").value, cant = document.getElementById("m_cant").value, costo = document.getElementById("m_costo").value;
     if(!insumo || !costo) return;
-    fetch("/api/mercado/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ insumo, cantidad: cant, costo })
-    }).then(() => location.reload());
+    fetch("/api/mercado/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ insumo, cantidad: cant, costo }) }).then(() => location.reload());
 }
 
-function eliminarMercado(id) {
-    fetch(`/api/mercado/delete/${id}`, { method: "DELETE" }).then(() => location.reload());
-}
+function eliminarMercado(id) { fetch(`/api/mercado/delete/${id}`, { method: "DELETE" }).then(() => location.reload()); }
 
 function anotarCena() {
     let sel = document.getElementById("c_producto");
-    let prod = sel.value;
-    let costo_u = sel.options[sel.selectedIndex].dataset.costo;
-    let cant = document.getElementById("c_cant").value;
-    fetch("/api/cena/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ producto: prod, cantidad: cant, costo_u })
-    }).then(() => location.reload());
+    fetch("/api/cena/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ producto: sel.value, cantidad: document.getElementById("c_cant").value, costo_u: sel.options[sel.selectedIndex].dataset.costo }) }).then(() => location.reload());
 }
 
 function guardarPrecios() {
@@ -416,19 +343,25 @@ function guardarPrecios() {
     precios["{{ p['id'] }}"] = document.getElementById("p_venta_{{ p['id'] }}").value;
     costos["{{ p['id'] }}"] = document.getElementById("p_costo_{{ p['id'] }}").value;
     {% endfor %}
-    fetch("/api/precios/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ precios, costos })
-    }).then(() => { alert("Precios actualizados"); location.reload(); });
+    fetch("/api/precios/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ precios, costos }) }).then(() => { alert("Actualizado"); location.reload(); });
 }
 
 function modificarStock(item, delta) {
-    fetch("/api/stock/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item: item, delta: delta })
-    }).then(res => res.json()).then(data => { if (data.status === "success") location.reload(); });
+    fetch("/api/stock/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ item, delta }) }).then(() => location.reload());
+}
+
+function modificarSodaAdmin(categoria, sabor, delta) {
+    fetch("/api/soda/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ categoria, sabor, delta }) })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") { location.reload(); }
+        else { alert(data.message); }
+    });
+}
+
+function ejecutarCierreJornada() {
+    if(!confirm("¿Deseas realizar el cierre de jornada, limpiar el historial de ventas y reiniciar el stock de cocina?")) return;
+    fetch("/api/cierre/ejecutar", { method: "POST" }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
 }
 </script>
 {% endblock %}
