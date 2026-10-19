@@ -1,10 +1,10 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
 app = Flask(__name__)
 app.secret_key = 'puku_secret_key_2026'
-
 DATABASE = 'puku.db'
 
 def get_db_connection():
@@ -37,14 +37,18 @@ def init_db():
             categoria TEXT NOT NULL
         )
     ''')
-
+    
     # 3. Tabla de ventas
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             total REAL NOT NULL,
-            usuario TEXT NOT NULL
+            usuario TEXT NOT NULL,
+            cliente TEXT,
+            tipo_pedido TEXT,
+            metodo_pago TEXT,
+            detalle TEXT
         )
     ''')
     
@@ -70,14 +74,26 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
-            ('Eco Pierna', 15.00, 50, 'Broaste'),
-            ('Eco Contra', 15.00, 50, 'Broaste'),
-            ('Eco Pecho', 16.00, 50, 'Broaste'),
-            ('Eco Ala', 16.00, 50, 'Broaste'),
-            ('1/4 Pecho', 30.00, 40, 'Broaste'),
-            ('1/4 Pierna', 30.00, 40, 'Broaste'),
-            ('1/2 Pollo', 55.00, 30, 'Broaste'),
-            ('1 Pollo', 110.00, 20, 'Broaste')
+            ('Eco Pierna', 15.00, 20, 'Broaste'),
+            ('Eco Contra', 15.00, 20, 'Broaste'),
+            ('Eco Pecho', 16.00, 20, 'Broaste'),
+            ('Eco Ala', 16.00, 20, 'Broaste'),
+            ('¼ Pecho Broaste', 30.00, 20, 'Broaste'),
+            ('¼ Pierna Broaste', 30.00, 20, 'Broaste'),
+            ('½ Pollo Broaste', 55.00, 15, 'Broaste'),
+            ('1 Pollo Broaste', 110.00, 10, 'Broaste'),
+            ('¼ Pecho Brasa', 30.00, 20, 'Brasa'),
+            ('¼ Pierna Brasa', 30.00, 20, 'Brasa'),
+            ('½ Pollo Brasa', 55.00, 15, 'Brasa'),
+            ('1 Pollo Brasa', 110.00, 10, 'Brasa'),
+            ('Hamburguesa Simple', 15.00, 30, 'Especiales'),
+            ('Salchipapas', 12.00, 30, 'Especiales'),
+            ('Soda Peke', 3.00, 50, 'Sodas'),
+            ('Soda Personal', 7.00, 50, 'Sodas'),
+            ('Soda 2 Litros', 15.00, 30, 'Sodas'),
+            ('Pecho', 20, 20, 'Stock Cocina'),
+            ('Pierna', 20, 20, 'Stock Cocina'),
+            ('Sodas Pekes', 50, 50, 'Stock Sodas')
         ]
         cursor.executemany("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     
@@ -89,7 +105,6 @@ with app.app_context():
     init_db()
 
 # --- RUTAS DE LA APLICACIÓN ---
-
 @app.route('/')
 def index():
     if 'usuario' in session:
@@ -136,6 +151,71 @@ def pos():
                            productos=productos,
                            stock=stock_diccionario)
 
+@app.route('/api/cobrar', methods=['POST'])
+def api_cobrar():
+    if 'usuario' not in session:
+        return jsonify({'status': 'error', 'message': 'No autorizado'}), 401
+    
+    data = request.get_json()
+    if not data or not data.get('items'):
+        return jsonify({'status': 'error', 'message': 'Carrito vacío'}), 400
+        
+    cliente = data.get('cliente', 'Sin Nombre')
+    tipo_pedido = data.get('tipo_pedido', 'Para Llevar')
+    metodo_pago = data.get('metodo_pago', 'Efectivo')
+    items = data.get('items', [])
+    total = data.get('total', 0.0)
+    usuario = session['usuario']
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    detalle_str = ", ".join([f"{item['cant']}x {item['nombre']}" for item in items])
+    
+    cursor.execute(
+        "INSERT INTO ventas (total, usuario, cliente, tipo_pedido, metodo_pago, detalle) VALUES (?, ?, ?, ?, ?, ?)",
+        (total, usuario, cliente, tipo_pedido, metodo_pago, detalle_str)
+    )
+    
+    for item in items:
+        nombre = item['nombre']
+        cant = item['cant']
+        cursor.execute("UPDATE productos SET stock = stock - ? WHERE nombre = ?", (cant, nombre))
+        
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'status': 'success', 'message': f'¡Venta cobrada con éxito por {total:.2f} Bs!'})
+
+@app.route('/api/stock/update', methods=['POST'])
+def api_stock_update():
+    if 'usuario' not in session:
+        return jsonify({'status': 'error', 'message': 'No autorizado'}), 401
+        
+    data = request.get_json()
+    item = data.get('item')
+    delta = data.get('delta', 0)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT stock FROM productos WHERE nombre = ?", (item,))
+    row = cursor.fetchone()
+    
+    if not row:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'Item no encontrado'}), 404
+        
+    nueva_cantidad = row['stock'] + delta
+    if nueva_cantidad < 0:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'El stock no puede ser menor a 0'}), 400
+        
+    cursor.execute("UPDATE productos SET stock = ? WHERE nombre = ?", (nueva_cantidad, item))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'status': 'success', 'nueva_cantidad': nueva_cantidad})
+
 @app.route('/productos', methods=['GET', 'POST'])
 def productos():
     if 'usuario' not in session:
@@ -176,7 +256,7 @@ def ventas():
     return render_template('ventas.html', ventas=lista_ventas)
 
 @app.route('/usuarios')
-def usuarios():
+def usuarios_route():
     if 'usuario' not in session or session.get('rol') != 'admin':
         flash('Acceso denegado.', 'danger')
         return redirect(url_for('pos'))
