@@ -1,16 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
-    <!-- PANEL IZQUIERDO: PESTAÑAS Y PRODUCTOS -->
+    <!-- PANEL IZQUIERDO: TODAS LAS PESTAÑAS COMPLETAS -->
     <div class="col-md-8">
         <div class="card card-dark p-3 mb-3">
-            <!-- Pestañas del Menú -->
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item"><button class="nav-link active bg-warning text-dark font-weight-bold me-1" id="tab-broaste" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-brasa" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-especiales" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-sodas" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
+                <li class="nav-item"><button class="nav-link active bg-warning text-dark fw-bold me-1" id="tab-broaste" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-brasa" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-especiales" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-extras" data-bs-toggle="pill" data-bs-target="#extras">➕ Extras</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-sodas" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-mercado" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
+                {% if rol == 'admin' %}
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-precios" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-cenas" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas y Costos</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" id="tab-reporte" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial Ventas</button></li>
+                {% endif %}
             </ul>
+
             <div class="tab-content" id="pills-tabContent">
                 <!-- Broaste -->
                 <div class="tab-pane fade show active" id="broaste">
@@ -25,6 +32,7 @@
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('1 Pollo Broaste', 110)" class="btn btn-warning w-100 py-3 fw-bold">1 Pollo<br>110 Bs</button></div>
                     </div>
                 </div>
+
                 <!-- A la Brasa -->
                 <div class="tab-pane fade" id="brasa">
                     <div class="row g-2">
@@ -34,30 +42,139 @@
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('1 Pollo Brasa', 110)" class="btn btn-danger w-100 py-3 fw-bold text-white">1 Pollo Brasa<br>110 Bs</button></div>
                     </div>
                 </div>
+
                 <!-- Especiales -->
                 <div class="tab-pane fade" id="especiales">
                     <div class="row g-2">
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Hamburguesa Simple', 15)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa<br>15 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Salchipapas', 12)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchipapas<br>12 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Simple', 17)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Simple<br>17 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Clásica', 20)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Clásica<br>20 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Doble', 30)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Doble<br>30 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchipapas', 15)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchipapas<br>15 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchiburguer', 30)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchiburguer<br>30 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchipollo', 25)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchipollo<br>25 Bs</button></div>
                     </div>
                 </div>
+
+                <!-- Extras -->
+                <div class="tab-pane fade" id="extras">
+                    <div class="row g-2">
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Presa Extra', 10)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Presa Extra<br>10 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Papa', 6)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Papa<br>6 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Arroz', 6)" class="btn btn-purple text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Arroz<br>6 Bs</button></div>
+                    </div>
+                </div>
+
                 <!-- Sodas -->
                 <div class="tab-pane fade" id="sodas">
                     <div class="row g-2">
-                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 3.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>3.00 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 7.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>7.00 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('2 Litros', 15.0)" class="btn btn-purple w-100 py-4 fw-bold text-white" style="background-color: #7209b7;">🥤 2 Litros<br>15.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 5.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>5.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 8.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>8.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('2 Litros', 20.0)" class="btn btn-purple w-100 py-4 fw-bold text-white" style="background-color: #7209b7;">🥤 2 Litros<br>20.00 Bs</button></div>
                     </div>
                 </div>
+
+                <!-- Mercado -->
+                <div class="tab-pane fade" id="mercado">
+                    <h6 class="text-teal mb-3">🛒 Registrar Compra de Mercado e Insumos</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4"><input type="text" id="m_insumo" class="form-control form-control-sm bg-dark text-light" placeholder="Insumo (Ej: Papas)"></div>
+                        <div class="col-3"><input type="text" id="m_cant" class="form-control form-control-sm bg-dark text-light" placeholder="Cantidad / Peso"></div>
+                        <div class="col-3"><input type="number" id="m_costo" class="form-control form-control-sm bg-dark text-light" placeholder="Costo (Bs)"></div>
+                        <div class="col-2"><button onclick="agregarMercado()" class="btn btn-success btn-sm w-100">➕ Añadir</button></div>
+                    </div>
+                    <table class="table table-dark table-striped table-sm fs-7">
+                        <thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo (Bs)</th><th>Acción</th></tr></thead>
+                        <tbody>
+                            {% for item in mercado %}
+                            <tr>
+                                <td>{{ item['insumo'] }}</td>
+                                <td>{{ item['cantidad'] }}</td>
+                                <td>{{ item['costo'] }} Bs</td>
+                                <td><button onclick="eliminarMercado({{ item['id'] }})" class="btn btn-danger btn-sm py-0">✕</button></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if rol == 'admin' %}
+                <!-- Precios -->
+                <div class="tab-pane fade" id="precios">
+                    <h6 class="text-warning mb-3">⚙ Editar Precios de Venta y Costos de Compra</h6>
+                    <div style="max-height: 350px; overflow-y: auto;">
+                        <table class="table table-dark table-sm fs-7">
+                            <thead><tr><th>Producto</th><th>Precio Venta (Bs)</th><th>Costo Compra (Bs)</th></tr></thead>
+                            <tbody>
+                                {% for p in productos %}
+                                <tr>
+                                    <td>{{ p['nombre'] }}</td>
+                                    <td><input type="number" id="p_venta_{{ p['id'] }}" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{ p['precio'] }}"></td>
+                                    <td><input type="number" id="p_costo_{{ p['id'] }}" class="form-control form-control-sm bg-dark text-light border-secondary" value="{{ p['costo'] }}"></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button onclick="guardarPrecios()" class="btn btn-primary btn-sm mt-2">💾 Guardar Precios y Costos</button>
+                </div>
+
+                <!-- Cenas y Costos -->
+                <div class="tab-pane fade" id="cenas">
+                    <h6 class="text-danger mb-3">🌙 Anotar Cenas / Sobrantes del Turno</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-5">
+                            <select id="c_producto" class="form-select form-select-sm bg-dark text-light">
+                                {% for p in productos %}
+                                <option value="{{ p['nombre'] }}" data-costo="{{ p['costo'] }}">{{ p['nombre'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-3"><input type="number" id="c_cant" class="form-control form-control-sm bg-dark text-light" value="1" placeholder="Cant"></div>
+                        <div class="col-4"><button onclick="anotarCena()" class="btn btn-purple btn-sm w-100 text-white" style="background-color: #7209b7;">➕ Anotar Cena</button></div>
+                    </div>
+                    <table class="table table-dark table-sm fs-7">
+                        <thead><tr><th>Producto</th><th>Cant</th><th>Costo U.</th><th>Subtotal</th></tr></thead>
+                        <tbody>
+                            {% for c in cenas %}
+                            <tr><td>{{ c['producto'] }}</td><td>{{ c['cantidad'] }}</td><td>{{ c['costo_u'] }} Bs</td><td>{{ c['subtotal'] }} Bs</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Historial Ventas -->
+                <div class="tab-pane fade" id="reporte">
+                    <h6 class="text-info mb-3">📊 Historial de Ventas del Día</h6>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-dark table-striped table-sm fs-7">
+                            <thead><tr><th>Hora/Fecha</th><th>Cajero</th><th>Cliente</th><th>Tipo</th><th>Pago</th><th>Detalle</th><th>Total</th></tr></thead>
+                            <tbody>
+                                {% for v in ventas %}
+                                <tr>
+                                    <td>{{ v['fecha'] }}</td>
+                                    <td>{{ v['usuario'] }}</td>
+                                    <td>{{ v['cliente'] }}</td>
+                                    <td>{{ v['tipo_pedido'] }}</td>
+                                    <td>{{ v['metodo_pago'] }}</td>
+                                    <td>{{ v['detalle'] }}</td>
+                                    <td class="text-end fw-bold text-warning">{{ v['total'] }} Bs</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    <!-- PANEL DERECHO: CARRITO Y COBRO -->
+
+    <!-- PANEL DERECHO: CARRITO, PAGO MIXTO Y NOTA -->
     <div class="col-md-4">
         <div class="card card-dark p-3 mb-3">
             <h5 class="text-accent">Pedido Actual</h5>
             <div class="mb-2">
-                <label class="form-label text-light fs-7 mb-1">Cliente / Ref:</label>
+                <label class="form-label text-light fs-7 mb-1">Cajero: <strong>{{ usuario }}</strong> | Cliente / Ref:</label>
                 <input type="text" id="cliente" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Ej: Torres">
             </div>
             <div class="row mb-2">
@@ -71,38 +188,47 @@
                 </div>
                 <div class="col-6">
                     <label class="form-label text-light fs-7 mb-1">Pago:</label>
-                    <select id="metodo_pago" class="form-select form-select-sm bg-dark text-light border-secondary">
+                    <select id="metodo_pago" onchange="evaluarMetodoPago()" class="form-select form-select-sm bg-dark text-light border-secondary">
                         <option value="Efectivo">Efectivo</option>
                         <option value="QR">QR</option>
+                        <option value="Mixto">Mixto</option>
                         <option value="PeYa">PeYa</option>
                     </select>
                 </div>
             </div>
-            <!-- Tabla Carrito Dinámico -->
-            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 180px; max-height: 250px; overflow-y: auto;">
+
+            <!-- Desglose Pago Mixto -->
+            <div id="panel_mixto" class="row g-2 mb-2 d-none">
+                <div class="col-6">
+                    <input type="number" id="pago_efectivo" class="form-control form-control-sm bg-dark text-light border-info" placeholder="Monto EF (Bs)">
+                </div>
+                <div class="col-6">
+                    <input type="number" id="pago_qr" class="form-control form-control-sm bg-dark text-light border-primary" placeholder="Monto QR (Bs)">
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <input type="text" id="nota_pedido" class="form-control form-control-sm bg-dark text-warning border-secondary" placeholder="Nota / Obs (Ej: Sin Arroz)">
+            </div>
+
+            <!-- Tabla Carrito -->
+            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 160px; max-height: 220px; overflow-y: auto;">
                 <table class="table table-dark table-sm fs-7 mb-0">
-                    <thead>
-                        <tr>
-                            <th>Prod</th>
-                            <th class="text-center">Cant</th>
-                            <th class="text-end">Subt</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-carrito">
-                        <!-- Se llena con JavaScript -->
-                    </tbody>
+                    <thead><tr><th>Prod</th><th class="text-center">Cant</th><th class="text-end">Subt</th><th></th></tr></thead>
+                    <tbody id="tabla-carrito"></tbody>
                 </table>
             </div>
+
             <div class="d-flex justify-content-between align-items-center">
                 <button onclick="vaciarCarrito()" class="btn btn-outline-danger btn-sm">Limpiar</button>
                 <h4 id="total-txt" class="text-warning m-0">Total: 0.00 Bs</h4>
             </div>
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
-        <!-- CONTROL DE STOCK -->
+
+        <!-- CONTROL DE STOCK SECUNDARIO -->
         <div class="card card-dark p-3">
-            <h6 class="text-info mb-2">📦 Stock Cocina y Bebidas</h6>
+            <h6 class="text-info mb-2">📦 Stock Cocina (Presas)</h6>
             <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
                 <span>Pecho: <strong id="st-Pecho">{{ stock['Pecho'] }}</strong></span>
                 <div>
@@ -121,7 +247,7 @@
     </div>
 </div>
 
-<!-- MODAL PARA SELECCIONAR SABOR DE SODA -->
+<!-- MODAL SELECCIONAR SABOR DE SODA -->
 <div class="modal fade" id="modalSaborSoda" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content bg-dark text-light border-secondary">
@@ -130,9 +256,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="row g-2" id="listaSaboresGrid">
-          <!-- Botones de sabores generados por JS -->
-        </div>
+        <div class="row g-2" id="listaSaboresGrid"></div>
       </div>
     </div>
   </div>
@@ -146,6 +270,13 @@ const saboresDisponibles = [
     "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", 
     "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"
 ];
+
+function evaluarMetodoPago() {
+    let m = document.getElementById("metodo_pago").value;
+    let p = document.getElementById("panel_mixto");
+    if (m === "Mixto") p.classList.remove("d-none");
+    else p.classList.add("d-none");
+}
 
 function agregarAlCarrito(nombre, precio, categoriaSoda = null, saborSoda = null) {
     let nombreMostrar = saborSoda ? `${nombre} (${saborSoda})` : nombre;
@@ -181,7 +312,6 @@ function abrirSelectorSoda(categoria, precio) {
             </div>
         `;
     });
-    
     let modal = new bootstrap.Modal(document.getElementById('modalSaborSoda'));
     modal.show();
 }
@@ -212,29 +342,32 @@ function renderizarCarrito() {
     document.getElementById("total-txt").innerText = `Total: ${total.toFixed(2)} Bs`;
 }
 
-function eliminarItem(index) {
-    carrito.splice(index, 1);
-    renderizarCarrito();
-}
-
-function vaciarCarrito() {
-    carrito = [];
-    renderizarCarrito();
-}
+function eliminarItem(index) { carrito.splice(index, 1); renderizarCarrito(); }
+function vaciarCarrito() { carrito = []; renderizarCarrito(); document.getElementById("nota_pedido").value = ""; }
 
 function cobrarPedido() {
-    if (carrito.length === 0) {
-        alert("El carrito está vacío.");
+    if (carrito.length === 0) { alert("El carrito está vacío."); return; }
+    let total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+    let m = document.getElementById("metodo_pago").value;
+    let ef = parseFloat(document.getElementById("pago_efectivo").value || 0);
+    let qr = parseFloat(document.getElementById("pago_qr").value || 0);
+
+    if (m === "Mixto" && Math.abs((ef + qr) - total) > 0.01) {
+        alert(`Suma Mixta (${ef + qr} Bs) no coincide con el total (${total} Bs)`);
         return;
     }
-    let total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+
     let payload = {
         cliente: document.getElementById("cliente").value || "Sin Nombre",
         tipo_pedido: document.getElementById("tipo_pedido").value,
-        metodo_pago: document.getElementById("metodo_pago").value,
+        metodo_pago: m,
+        nota: document.getElementById("nota_pedido").value,
+        monto_efectivo: ef,
+        monto_qr: qr,
         items: carrito,
         total: total
     };
+
     fetch("/api/cobrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -245,7 +378,49 @@ function cobrarPedido() {
         alert(data.message);
         vaciarCarrito();
         document.getElementById("cliente").value = "";
+        location.reload();
     });
+}
+
+function agregarMercado() {
+    let insumo = document.getElementById("m_insumo").value;
+    let cant = document.getElementById("m_cant").value;
+    let costo = document.getElementById("m_costo").value;
+    if(!insumo || !costo) return;
+    fetch("/api/mercado/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ insumo, cantidad: cant, costo })
+    }).then(() => location.reload());
+}
+
+function eliminarMercado(id) {
+    fetch(`/api/mercado/delete/${id}`, { method: "DELETE" }).then(() => location.reload());
+}
+
+function anotarCena() {
+    let sel = document.getElementById("c_producto");
+    let prod = sel.value;
+    let costo_u = sel.options[sel.selectedIndex].dataset.costo;
+    let cant = document.getElementById("c_cant").value;
+    fetch("/api/cena/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ producto: prod, cantidad: cant, costo_u })
+    }).then(() => location.reload());
+}
+
+function guardarPrecios() {
+    let precios = {}, costos = {};
+    {% for p in productos %}
+    precios["{{ p['id'] }}"] = document.getElementById("p_venta_{{ p['id'] }}").value;
+    costos["{{ p['id'] }}"] = document.getElementById("p_costo_{{ p['id'] }}").value;
+    {% endfor %}
+    fetch("/api/precios/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ precios, costos })
+    }).then(() => { alert("Precios actualizados"); location.reload(); });
 }
 
 function modificarStock(item, delta) {
@@ -253,16 +428,7 @@ function modificarStock(item, delta) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item: item, delta: delta })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "success") {
-            let el = document.getElementById("st-" + item);
-            if (el) el.innerText = data.nueva_cantidad;
-        } else {
-            alert(data.message);
-        }
-    });
+    }).then(res => res.json()).then(data => { if (data.status === "success") location.reload(); });
 }
 </script>
 {% endblock %}
