@@ -166,12 +166,24 @@
 
                 <!-- Usuarios / Cajeros -->
                 <div class="tab-pane fade" id="usuarios">
-                    <h6 class="text-info mb-3">👥 Registrar Nuevos Cajeros / Usuarios</h6>
+                    <h6 class="text-info mb-2">👥 Registrar Nuevos Cajeros / Usuarios</h6>
+                    <p class="text-muted fs-7 mb-3">Ingresa el usuario de acceso, su contraseña personal y el nombre completo que figurará en los reportes.</p>
                     <div class="row g-2 mb-3">
-                        <div class="col-3"><input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Usuario (Ej: juan)"></div>
-                        <div class="col-3"><input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Contraseña de Acceso"></div>
-                        <div class="col-4"><input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Nombre Completo"></div>
-                        <div class="col-2"><button onclick="crearUsuario()" class="btn btn-success btn-sm w-100">➕ Crear</button></div>
+                        <div class="col-md-3">
+                            <label class="form-label text-light fs-7 mb-1">Usuario (Login):</label>
+                            <input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Ej: juan1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-light fs-7 mb-1">Contraseña:</label>
+                            <input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Clave secreta">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light fs-7 mb-1">Nombre Completo:</label>
+                            <input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Ej: Juan Pérez">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button onclick="crearUsuario()" class="btn btn-success btn-sm w-100 fw-bold">➕ Crear</button>
+                        </div>
                     </div>
                     <table class="table table-dark table-striped table-sm fs-7">
                         <thead><tr><th>Usuario</th><th>Nombre Completo</th><th>Rol</th><th>Acción</th></tr></thead>
@@ -192,15 +204,22 @@
                     </table>
                 </div>
 
-                <!-- Reportes y Cierre -->
+                <!-- Reportes y Cierre (Con Detalle de Compra) -->
                 <div class="tab-pane fade" id="reporte">
-                    <h6 class="text-info mb-3">📊 Historial y Cierre de Jornada</h6>
+                    <h6 class="text-info mb-3">📊 Historial de Ventas y Cierre de Jornada</h6>
                     <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
                         <table class="table table-dark table-striped table-sm fs-7">
-                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Total</th></tr></thead>
+                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Detalle de Compra</th><th>Total</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
-                                <tr><td>{{ v['fecha'] }}</td><td>{{ v['usuario'] }}</td><td>{{ v['cliente'] }}</td><td>{{ v['metodo_pago'] }}</td><td class="text-warning fw-bold">{{ v['total'] }} Bs</td></tr>
+                                <tr>
+                                    <td>{{ v['fecha'] }}</td>
+                                    <td>{{ v['usuario'] }}</td>
+                                    <td>{{ v['cliente'] }}</td>
+                                    <td>{{ v['metodo_pago'] }}</td>
+                                    <td>{{ v['detalle'] }}</td>
+                                    <td class="text-warning fw-bold">{{ v['total'] }} Bs</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -235,7 +254,7 @@
         </div>
     </div>
 
-    <!-- PANEL DERECHO: CARRITO Y STOCK DE COCINA EXPANDIDO -->
+    <!-- PANEL DERECHO: CARRITO Y STOCK DE COCINA ALTO CONTRASTE -->
     <div class="col-md-4">
         <div class="card card-dark p-3 mb-3">
             <h5 class="text-accent">Pedido Actual</h5>
@@ -286,16 +305,16 @@
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
 
-        <!-- Stock Cocina Broaster y Brasa Completo -->
+        <!-- Stock Cocina Alto Contraste -->
         <div class="card card-dark p-3">
             <h6 class="text-info mb-2">📦 Stock Cocina (Broaster y Brasa)</h6>
-            <div style="max-height: 180px; overflow-y: auto;">
+            <div style="max-height: 200px; overflow-y: auto;">
                 {% for item_p in ['Pecho', 'Contra', 'Pierna', 'Ala', 'Pecho Brasa', 'Contra Brasa', 'Pierna Brasa', 'Ala Brasa'] %}
-                <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
-                    <span>{{ item_p }}: <strong id="st-{{ item_p }}">{{ stock.get(item_p, 0) }}</strong></span>
+                <div class="d-flex justify-content-between align-items-center fs-7 mb-2 px-2 py-1 rounded" style="background-color: #212529;">
+                    <span class="text-white fw-bold">{{ item_p }}: <strong class="text-warning fs-6" id="st-{{ item_p }}">{{ stock.get(item_p, 0) }}</strong></span>
                     <div>
-                        <button onclick="modificarStock('{{ item_p }}', -1)" class="btn btn-danger btn-sm py-0 px-2">-</button>
-                        <button onclick="modificarStock('{{ item_p }}', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
+                        <button onclick="modificarStock('{{ item_p }}', -1)" class="btn btn-danger btn-sm py-0 px-2 fw-bold">-</button>
+                        <button onclick="modificarStock('{{ item_p }}', 1)" class="btn btn-success btn-sm py-0 px-2 fw-bold">+</button>
                     </div>
                 </div>
                 {% endfor %}
@@ -488,7 +507,7 @@ function crearUsuario() {
     let username = document.getElementById("u_username").value;
     let password = document.getElementById("u_password").value;
     let nombre_completo = document.getElementById("u_nombre").value;
-    if(!username || !password || !nombre_completo) return alert("Completa todos los campos, incluyendo la contraseña");
+    if(!username || !password || !nombre_completo) return alert("Completa todos los campos (Usuario, Contraseña y Nombre)");
     fetch("/api/usuarios/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
