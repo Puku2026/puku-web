@@ -59,7 +59,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Inicializar DB en Render / Gunicorn al arrancar
+# Inicializar Base de Datos al arrancar en Render
 with app.app_context():
     init_db()
 
@@ -103,33 +103,20 @@ def pos():
     productos = cursor.fetchall()
     conn.close()
     
-    return render_template('index.html', usuario=session['usuario'], rol=session['rol'], productos=productos)
+    return render_template('pos.html', usuario=session['usuario'], rol=session['rol'], productos=productos)
 
-@app.route('/productos')
-def productos():
+@app.route('/usuarios')
+def usuarios():
     if 'usuario' not in session:
         return redirect(url_for('login'))
     
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM productos")
-    productos = cursor.fetchall()
+    cursor.execute("SELECT * FROM usuarios")
+    lista_usuarios = cursor.fetchall()
     conn.close()
     
-    return render_template('productos.html', productos=productos)
-
-@app.route('/ventas')
-def ventas():
-    if 'usuario' not in session:
-        return redirect(url_for('login'))
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC")
-    ventas = cursor.fetchall()
-    conn.close()
-    
-    return render_template('ventas.html', ventas=ventas)
+    return render_template('usuarios.html', usuarios=lista_usuarios)
 
 @app.route('/logout')
 def logout():
