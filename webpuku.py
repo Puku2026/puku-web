@@ -2,6 +2,7 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+import json
 
 app = Flask(__name__)
 app.secret_key = 'puku_secret_key_2026'
@@ -27,7 +28,7 @@ def init_db():
         )
     ''')
     
-    # 2. Tabla de productos (con stock y categoría)
+    # 2. Tabla de productos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,6 +53,16 @@ def init_db():
         )
     ''')
     
+    # 4. Tabla de stock de sodas por sabor
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS stock_sodas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria TEXT NOT NULL,
+            sabor TEXT NOT NULL,
+            cantidad INTEGER DEFAULT 6
+        )
+    ''')
+
     # Usuario administrador por defecto
     cursor.execute("SELECT * FROM usuarios WHERE username = 'yamil'")
     if not cursor.fetchone():
@@ -70,7 +81,21 @@ def init_db():
             ('cajero', hashed_password, 'cajero', 'Cajero PuKú')
         )
         
-    # Productos iniciales de prueba si la tabla está vacía
+    # Sabores base de sodas
+    sabores_base = [
+        "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
+        "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
+        "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", 
+        "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"
+    ]
+    
+    cursor.execute("SELECT COUNT(*) FROM stock_sodas")
+    if cursor.fetchone()[0] == 0:
+        for cat in ["Pekes", "Personales", "2 Litros"]:
+            for sab in sabores_base:
+                cursor.execute("INSERT INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sab, 6))
+
+    # Productos iniciales de cocina si está vacío
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
@@ -88,23 +113,19 @@ def init_db():
             ('1 Pollo Brasa', 110.00, 10, 'Brasa'),
             ('Hamburguesa Simple', 15.00, 30, 'Especiales'),
             ('Salchipapas', 12.00, 30, 'Especiales'),
-            ('Soda Peke', 3.00, 50, 'Sodas'),
-            ('Soda Personal', 7.00, 50, 'Sodas'),
-            ('Soda 2 Litros', 15.00, 30, 'Sodas'),
             ('Pecho', 20, 20, 'Stock Cocina'),
             ('Pierna', 20, 20, 'Stock Cocina'),
-            ('Sodas Pekes', 50, 50, 'Stock Sodas')
+            ('Contra', 20, 20, 'Stock Cocina'),
+            ('Ala', 20, 20, 'Stock Cocina')
         ]
         cursor.executemany("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     
     conn.commit()
     conn.close()
 
-# Inicializar Base de Datos al arrancar
 with app.app_context():
     init_db()
 
-# --- RUTAS DE LA APLICACIÓN ---
 @app.route('/')
 def index():
     if 'usuario' in session:
@@ -141,15 +162,28 @@ def pos():
     cursor = conn.cursor()
     cursor.execute("SELECT id, nombre, precio, stock, categoria FROM productos")
     productos = cursor.fetchall()
+    
+    cursor.execute("SELECT categoria, sabor, cantidad FROM stock_sodas")
+    sodas_db = cursor.fetchall()
     conn.close()
     
     stock_diccionario = {p['nombre']: p['stock'] for p in productos}
     
+    # Organizar sodas por categoría y sabor para la web
+    stock_sodas_dic = {"Pekes": {}, "Personales": {}, "2 Litros": {}}
+    for s in sodas_db:
+        if s['categoria'] in stock_sodas_dic:
+            stock_sodas_dic[s['categoria']][s['sabor']] = s['cantidad']
+            
+    sabores_lista = list(stock_sodas_dic["Pekes"].keys())
+
     return render_template('pos.html', 
                            usuario=session['usuario'], 
                            rol=session.get('rol', 'cajero'), 
                            productos=productos,
-                           stock=stock_diccionario)
+                           stock=stock_diccionario,
+                           stock_sodas=stock_sodas_dic,
+                           sabores=sabores_lista)
 
 @app.route('/api/cobrar', methods=['POST'])
 def api_cobrar():
@@ -180,7 +214,14 @@ def api_cobrar():
     for item in items:
         nombre = item['nombre']
         cant = item['cant']
+        # Descontar stock de cocina si aplica
         cursor.execute("UPDATE productos SET stock = stock - ? WHERE nombre = ?", (cant, nombre))
+        
+        # Si es soda con sabor específico
+        if 'categoria_soda' in item and 'sabor_soda' in item:
+            cat = item['categoria_soda']
+            sabor = item['sabor_soda']
+            cursor.execute("UPDATE stock_sodas SET cantidad = cantidad - ? WHERE categoria = ? AND sabor = ?", (cant, cat, sabor))
         
     conn.commit()
     conn.close()
@@ -216,30 +257,35 @@ def api_stock_update():
     
     return jsonify({'status': 'success', 'nueva_cantidad': nueva_cantidad})
 
-@app.route('/productos', methods=['GET', 'POST'])
-def productos():
+@app.route('/api/soda/update', methods=['POST'])
+def api_soda_update():
     if 'usuario' not in session:
-        return redirect(url_for('login'))
+        return jsonify({'status': 'error', 'message': 'No autorizado'}), 401
+        
+    data = request.get_json()
+    categoria = data.get('categoria')
+    sabor = data.get('sabor')
+    delta = data.get('delta', 0)
     
     conn = get_db_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT cantidad FROM stock_sodas WHERE categoria = ? AND sabor = ?", (categoria, sabor))
+    row = cursor.fetchone()
     
-    if request.method == 'POST' and session.get('rol') == 'admin':
-        nombre = request.form['nombre']
-        precio = float(request.form['precio'])
-        stock = int(request.form['stock'])
-        categoria = request.form['categoria']
+    if not row:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'Sabor no encontrado'}), 404
         
-        cursor.execute("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)",
-                       (nombre, precio, stock, categoria))
-        conn.commit()
-        flash('Producto agregado exitosamente', 'success')
+    nueva_cantidad = row['cantidad'] + delta
+    if nueva_cantidad < 0:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'El stock no puede ser menor a 0'}), 400
         
-    cursor.execute("SELECT * FROM productos")
-    lista_productos = cursor.fetchall()
+    cursor.execute("UPDATE stock_sodas SET cantidad = ? WHERE categoria = ? AND sabor = ?", (nueva_cantidad, categoria, sabor))
+    conn.commit()
     conn.close()
     
-    return render_template('productos.html', productos=lista_productos, rol=session.get('rol'))
+    return jsonify({'status': 'success', 'nueva_cantidad': nueva_cantidad})
 
 @app.route('/ventas')
 def ventas():
