@@ -27,7 +27,7 @@ def init_db():
         )
     ''')
     
-    # 2. Tabla de productos / menú
+    # 2. Tabla de productos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +47,7 @@ def init_db():
         )
     ''')
     
-    # Crear usuario administrador por defecto si no existe
+    # Usuario administrador por defecto
     cursor.execute("SELECT * FROM usuarios WHERE username = 'yamil'")
     if not cursor.fetchone():
         hashed_password = generate_password_hash('puku2026')
@@ -59,14 +59,16 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ESTA LÍNEA ES LA CLAVE: Crea la base de datos y las tablas al arrancar en Render / Gunicorn
+# Inicializar DB en Render / Gunicorn
 with app.app_context():
     init_db()
+
+# --- RUTAS DE LA APLICACIÓN ---
 
 @app.route('/')
 def index():
     if 'usuario' in session:
-        return render_template('index.html', usuario=session['usuario'], rol=session['rol'])
+        return redirect(url_for('pos'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -84,11 +86,50 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['usuario'] = user['nombre_completo']
             session['rol'] = user['rol']
-            return redirect(url_for('index'))
+            return redirect(url_for('pos'))
         else:
             flash('Usuario o contraseña incorrectos', 'danger')
             
     return render_template('login.html')
+
+@app.route('/pos')
+def pos():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos")
+    productos = cursor.fetchall()
+    conn.close()
+    
+    return render_template('index.html', usuario=session['usuario'], rol=session['rol'], productos=productos)
+
+@app.route('/productos')
+def productos():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos")
+    productos = cursor.fetchall()
+    conn.close()
+    
+    return render_template('productos.html', productos=productos)
+
+@app.route('/ventas')
+def ventas():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC")
+    ventas = cursor.fetchall()
+    conn.close()
+    
+    return render_template('ventas.html', ventas=ventas)
 
 @app.route('/logout')
 def logout():
