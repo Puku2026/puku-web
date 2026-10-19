@@ -16,7 +16,7 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Crear tabla de usuarios
+    # 1. Tabla de usuarios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +24,26 @@ def init_db():
             password TEXT NOT NULL,
             rol TEXT NOT NULL,
             nombre_completo TEXT NOT NULL
+        )
+    ''')
+    
+    # 2. Tabla de productos / menú
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            precio REAL NOT NULL,
+            categoria TEXT NOT NULL
+        )
+    ''')
+
+    # 3. Tabla de ventas
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ventas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            total REAL NOT NULL,
+            usuario TEXT NOT NULL
         )
     ''')
     
@@ -39,7 +59,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Ejecutar la inicialización automáticamente al cargar la aplicación en Render / Gunicorn
+# ESTA LÍNEA ES LA CLAVE: Crea la base de datos y las tablas al arrancar en Render / Gunicorn
 with app.app_context():
     init_db()
 
