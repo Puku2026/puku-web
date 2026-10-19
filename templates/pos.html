@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="text-warning m-0">🍗 POLLOS PUKÚ - POS WEB</h4>
+    <div class="text-light fs-7">
+        Usuario: <strong class="text-info">{{ usuario }}</strong> ({{ rol }}) | 
+        <a href="/logout" class="btn btn-outline-danger btn-sm ms-2 py-0 px-2">🚪 Cerrar Sesión</a>
+    </div>
+</div>
+
 <div class="row">
-    <!-- PANEL IZQUIERDO: TODAS LAS PESTAÑAS -->
+    <!-- PANEL IZQUIERDO: PESTAÑAS Y PRODUCTOS -->
     <div class="col-md-8">
         <div class="card card-dark p-3 mb-3">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -12,8 +20,9 @@
                 <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
                 <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
                 {% if rol == 'admin' %}
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas y Costos</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios / Costos</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#usuarios">👥 Cajeros</button></li>
                 <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial y Cierre</button></li>
                 <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#stocksodas">🥤 Admin Sodas</button></li>
                 {% endif %}
@@ -34,9 +43,13 @@
                     </div>
                 </div>
 
-                <!-- Brasa -->
+                <!-- Brasa (Incluye Económicos) -->
                 <div class="tab-pane fade" id="brasa">
                     <div class="row g-2">
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pierna Brasa', 15)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Pierna Brasa<br>15 Bs</button></div>
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Contra Brasa', 15)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Contra Brasa<br>15 Bs</button></div>
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pecho Brasa', 16)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Pecho Brasa<br>16 Bs</button></div>
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Ala Brasa', 16)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Ala Brasa<br>16 Bs</button></div>
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pecho Brasa', 30)" class="btn btn-danger w-100 py-3 fw-bold text-white">¼ Pecho Brasa<br>30 Bs</button></div>
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pierna Brasa', 30)" class="btn btn-danger w-100 py-3 fw-bold text-white">¼ Pierna Brasa<br>30 Bs</button></div>
                         <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('½ Pollo Brasa', 55)" class="btn btn-danger w-100 py-3 fw-bold text-white">½ Pollo Brasa<br>55 Bs</button></div>
@@ -94,10 +107,24 @@
                 </div>
 
                 {% if rol == 'admin' %}
-                <!-- Precios -->
+                <!-- Precios y Costos de Sodas -->
                 <div class="tab-pane fade" id="precios">
-                    <h6 class="text-warning mb-3">⚙ Editar Precios y Costos</h6>
-                    <div style="max-height: 320px; overflow-y: auto;">
+                    <h6 class="text-warning mb-2">⚙ Precios de Venta y Costos de Compra</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-info fs-7 mb-1">Costo Pekes (Soda):</label>
+                            <input type="number" id="costo_pekes" class="form-control form-control-sm bg-dark text-light border-info" value="{{ costos_config.get('Pekes (Sodas)', 3.50) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-info fs-7 mb-1">Costo Personales (Soda):</label>
+                            <input type="number" id="costo_personales" class="form-control form-control-sm bg-dark text-light border-info" value="{{ costos_config.get('Personal (Sodas)', 4.80) }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-info fs-7 mb-1">Costo 2 Litros (Soda):</label>
+                            <input type="number" id="costo_2l" class="form-control form-control-sm bg-dark text-light border-info" value="{{ costos_config.get('2 L (Sodas)', 13.00) }}">
+                        </div>
+                    </div>
+                    <div style="max-height: 250px; overflow-y: auto;">
                         <table class="table table-dark table-sm fs-7">
                             <thead><tr><th>Producto</th><th>Precio Venta</th><th>Costo Compra</th></tr></thead>
                             <tbody>
@@ -111,22 +138,25 @@
                             </tbody>
                         </table>
                     </div>
-                    <button onclick="guardarPrecios()" class="btn btn-primary btn-sm mt-2">💾 Guardar Cambios</button>
+                    <button onclick="guardarPrecios()" class="btn btn-primary btn-sm mt-2">💾 Guardar Precios y Costos Globales</button>
                 </div>
 
                 <!-- Cenas -->
                 <div class="tab-pane fade" id="cenas">
-                    <h6 class="text-danger mb-3">🌙 Anotar Sobrantes / Cenas</h6>
+                    <h6 class="text-danger mb-3">🌙 Anotar Sobrantes / Cenas del Turno</h6>
                     <div class="row g-2 mb-3">
                         <div class="col-5">
                             <select id="c_producto" class="form-select form-select-sm bg-dark text-light">
                                 {% for p in productos %}
-                                <option value="{{ p['nombre'] }}" data-costo="{{ p['costo'] }}">{{ p['nombre'] }}</option>
+                                <option value="{{ p['nombre'] }}" data-costo="{{ p['costo'] }}" data-soda="0">{{ p['nombre'] }}</option>
                                 {% endfor %}
+                                <option value="Soda Pekes" data-costo="{{ costos_config.get('Pekes (Sodas)', 3.50) }}" data-soda="1">Soda Pekes</option>
+                                <option value="Soda Personales" data-costo="{{ costos_config.get('Personal (Sodas)', 4.80) }}" data-soda="1">Soda Personales</option>
+                                <option value="Soda 2 Litros" data-costo="{{ costos_config.get('2 L (Sodas)', 13.00) }}" data-soda="1">Soda 2 Litros</option>
                             </select>
                         </div>
                         <div class="col-3"><input type="number" id="c_cant" class="form-control form-control-sm bg-dark text-light" value="1"></div>
-                        <div class="col-4"><button onclick="anotarCena()" class="btn btn-sm w-100 text-white" style="background-color: #7209b7;">➕ Anotar</button></div>
+                        <div class="col-4"><button onclick="anotarCena()" class="btn btn-sm w-100 text-white" style="background-color: #7209b7;">➕ Anotar Cena</button></div>
                     </div>
                     <table class="table table-dark table-sm fs-7">
                         <thead><tr><th>Producto</th><th>Cant</th><th>Subtotal</th></tr></thead>
@@ -138,15 +168,43 @@
                     </table>
                 </div>
 
+                <!-- Usuarios / Cajeros -->
+                <div class="tab-pane fade" id="usuarios">
+                    <h6 class="text-info mb-3">👥 Registrar Nuevos Cajeros / Usuarios</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-3"><input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Usuario (Ej: juan)"></div>
+                        <div class="col-3"><input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Contraseña"></div>
+                        <div class="col-4"><input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Nombre Completo"></div>
+                        <div class="col-2"><button onclick="crearUsuario()" class="btn btn-success btn-sm w-100">➕ Crear</button></div>
+                    </div>
+                    <table class="table table-dark table-striped table-sm fs-7">
+                        <thead><tr><th>Usuario</th><th>Nombre Completo</th><th>Rol</th><th>Acción</th></tr></thead>
+                        <tbody>
+                            {% for u in usuarios %}
+                            <tr>
+                                <td>{{ u['username'] }}</td>
+                                <td>{{ u['nombre_completo'] }}</td>
+                                <td><span class="badge bg-{{ 'primary' if u['rol'] == 'admin' else 'secondary' }}">{{ u['rol'] }}</span></td>
+                                <td>
+                                    {% if u['username'] != 'yamil' %}
+                                    <button onclick="eliminarUsuario({{ u['id'] }})" class="btn btn-danger btn-sm py-0">✕</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
                 <!-- Reportes y Cierre -->
                 <div class="tab-pane fade" id="reporte">
                     <h6 class="text-info mb-3">📊 Historial y Cierre de Jornada</h6>
                     <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
                         <table class="table table-dark table-striped table-sm fs-7">
-                            <thead><tr><th>Fecha/Hora</th><th>Cliente</th><th>Pago</th><th>Total</th></tr></thead>
+                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Total</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
-                                <tr><td>{{ v['fecha'] }}</td><td>{{ v['cliente'] }}</td><td>{{ v['metodo_pago'] }}</td><td class="text-warning fw-bold">{{ v['total'] }} Bs</td></tr>
+                                <tr><td>{{ v['fecha'] }}</td><td>{{ v['usuario'] }}</td><td>{{ v['cliente'] }}</td><td>{{ v['metodo_pago'] }}</td><td class="text-warning fw-bold">{{ v['total'] }} Bs</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -181,12 +239,12 @@
         </div>
     </div>
 
-    <!-- PANEL DERECHO: CARRITO -->
+    <!-- PANEL DERECHO: CARRITO Y STOCK DE COCINA EXPANDIDO -->
     <div class="col-md-4">
         <div class="card card-dark p-3 mb-3">
             <h5 class="text-accent">Pedido Actual</h5>
             <div class="mb-2">
-                <label class="form-label text-light fs-7 mb-1">Cajero: <strong>{{ usuario }}</strong> | Cliente:</label>
+                <label class="form-label text-light fs-7 mb-1">Cliente / Ref:</label>
                 <input type="text" id="cliente" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Ej: Torres">
             </div>
             <div class="row mb-2">
@@ -218,7 +276,7 @@
                 <input type="text" id="nota_pedido" class="form-control form-control-sm bg-dark text-warning border-secondary" placeholder="Nota / Obs">
             </div>
 
-            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 150px; max-height: 200px; overflow-y: auto;">
+            <div class="border border-secondary p-2 rounded mb-3 bg-dark" style="min-height: 140px; max-height: 180px; overflow-y: auto;">
                 <table class="table table-dark table-sm fs-7 mb-0">
                     <thead><tr><th>Prod</th><th class="text-center">Cant</th><th class="text-end">Subt</th><th></th></tr></thead>
                     <tbody id="tabla-carrito"></tbody>
@@ -232,22 +290,19 @@
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
 
-        <!-- Stock Cocina -->
+        <!-- Stock Cocina Broaster y Brasa Completo -->
         <div class="card card-dark p-3">
-            <h6 class="text-info mb-2">📦 Stock Cocina (Presas)</h6>
-            <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
-                <span>Pecho: <strong id="st-Pecho">{{ stock['Pecho'] }}</strong></span>
-                <div>
-                    <button onclick="modificarStock('Pecho', -1)" class="btn btn-danger btn-sm py-0 px-2">-</button>
-                    <button onclick="modificarStock('Pecho', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
+            <h6 class="text-info mb-2">📦 Stock Cocina (Broaster y Brasa)</h6>
+            <div style="max-height: 180px; overflow-y: auto;">
+                {% for item_p in ['Pecho', 'Contra', 'Pierna', 'Ala', 'Pecho Brasa', 'Contra Brasa', 'Pierna Brasa', 'Ala Brasa'] %}
+                <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
+                    <span>{{ item_p }}: <strong id="st-{{ item_p }}">{{ stock.get(item_p, 0) }}</strong></span>
+                    <div>
+                        <button onclick="modificarStock('{{ item_p }}', -1)" class="btn btn-danger btn-sm py-0 px-2">-</button>
+                        <button onclick="modificarStock('{{ item_p }}', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
+                    </div>
                 </div>
-            </div>
-            <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
-                <span>Pierna: <strong id="st-Pierna">{{ stock['Pierna'] }}</strong></span>
-                <div>
-                    <button onclick="modificarStock('Pierna', -1)" class="btn btn-danger btn-sm py-0 px-2">-</button>
-                    <button onclick="modificarStock('Pierna', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -334,7 +389,30 @@ function eliminarMercado(id) { fetch(`/api/mercado/delete/${id}`, { method: "DEL
 
 function anotarCena() {
     let sel = document.getElementById("c_producto");
-    fetch("/api/cena/add", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ producto: sel.value, cantidad: document.getElementById("c_cant").value, costo_u: sel.options[sel.selectedIndex].dataset.costo }) }).then(() => location.reload());
+    let es_soda = sel.options[sel.selectedIndex].dataset.soda;
+    fetch("/api/cena/add", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ producto: sel.value, cantidad: document.getElementById("c_cant").value, costo_u: sel.options[sel.selectedIndex].dataset.costo, es_soda: es_soda }) 
+    }).then(() => location.reload());
+}
+
+function crearUsuario() {
+    let username = document.getElementById("u_username").value;
+    let password = document.getElementById("u_password").value;
+    let nombre_completo = document.getElementById("u_nombre").value;
+    if(!username || !password || !nombre_completo) return alert("Completa todos los campos");
+    fetch("/api/usuarios/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, nombre_completo, rol: "cajero" })
+    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
+}
+
+function eliminarUsuario(id) {
+    if(confirm("¿Eliminar este usuario?")) {
+        fetch(`/api/usuarios/delete/${id}`, { method: "DELETE" }).then(() => location.reload());
+    }
 }
 
 function guardarPrecios() {
@@ -343,7 +421,12 @@ function guardarPrecios() {
     precios["{{ p['id'] }}"] = document.getElementById("p_venta_{{ p['id'] }}").value;
     costos["{{ p['id'] }}"] = document.getElementById("p_costo_{{ p['id'] }}").value;
     {% endfor %}
-    fetch("/api/precios/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ precios, costos }) }).then(() => { alert("Actualizado"); location.reload(); });
+    let costos_sodas = {
+        'Pekes (Sodas)': document.getElementById("costo_pekes").value,
+        'Personal (Sodas)': document.getElementById("costo_personales").value,
+        '2 L (Sodas)': document.getElementById("costo_2l").value
+    };
+    fetch("/api/precios/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ precios, costos, costos_sodas }) }).then(() => { alert("Precios y Costos Actualizados"); location.reload(); });
 }
 
 function modificarStock(item, delta) {
