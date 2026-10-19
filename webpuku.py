@@ -16,7 +16,6 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Usuarios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +26,6 @@ def init_db():
         )
     ''')
     
-    # Productos y Precios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +37,6 @@ def init_db():
         )
     ''')
     
-    # Ventas
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +54,6 @@ def init_db():
         )
     ''')
     
-    # Stock de sodas por sabor
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stock_sodas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +63,6 @@ def init_db():
         )
     ''')
 
-    # Mercado / Insumos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mercado (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,7 +73,6 @@ def init_db():
         )
     ''')
 
-    # Cenas y Sobrantes
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cenas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +85,6 @@ def init_db():
         )
     ''')
 
-    # Configuración de Costos Globales
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS costos_config (
             clave TEXT PRIMARY KEY,
@@ -99,7 +92,6 @@ def init_db():
         )
     ''')
 
-    # Usuarios Base
     cursor.execute("SELECT * FROM usuarios WHERE username = 'yamil'")
     if not cursor.fetchone():
         cursor.execute(
@@ -114,7 +106,6 @@ def init_db():
             ('cajero', generate_password_hash('puku2026'), 'cajero', 'Cajero PuKú')
         )
         
-    # Sabores
     sabores_base = [
         "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
         "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
@@ -128,7 +119,6 @@ def init_db():
             for sab in sabores_base:
                 cursor.execute("INSERT INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sab, 6))
 
-    # Costos Base Sodas
     costos_sodas_iniciales = [
         ('Pekes (Sodas)', 3.50),
         ('Personal (Sodas)', 4.80),
@@ -139,7 +129,6 @@ def init_db():
     for c_clave, c_val in costos_sodas_iniciales:
         cursor.execute("INSERT OR IGNORE INTO costos_config (clave, costo) VALUES (?, ?)", (c_clave, c_val))
 
-    # Cargar Productos Iniciales
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
@@ -265,6 +254,42 @@ def pos():
                            ventas=ventas_list,
                            usuarios=usuarios_list,
                            costos_config=costos_config_db)
+
+@app.route('/api/producto/add', methods=['POST'])
+def api_producto_add():
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    data = request.get_json()
+    nombre = data.get('nombre')
+    precio = float(data.get('precio', 0.0))
+    costo = float(data.get('costo', 0.0))
+    categoria = data.get('categoria', 'Especiales')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO productos (nombre, precio, costo, categoria) VALUES (?, ?, ?, ?)",
+                       (nombre, precio, costo, categoria))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success', 'message': f'Producto {nombre} agregado con éxito'})
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'El producto ya existe'}), 400
+
+@app.route('/api/sabor/add', methods=['POST'])
+def api_sabor_add():
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    data = request.get_json()
+    sabor = data.get('sabor')
+    if not sabor: return jsonify({'status': 'error', 'message': 'El sabor no puede estar vacío'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    for cat in ["Pekes", "Personales", "2 Litros"]:
+        cursor.execute("INSERT OR IGNORE INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sabor, 6))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'message': f'Sabor {sabor} agregado con éxito'})
 
 @app.route('/api/cobrar', methods=['POST'])
 def api_cobrar():
