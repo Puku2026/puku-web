@@ -2,7 +2,6 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
-import json
 
 app = Flask(__name__)
 app.secret_key = 'puku_secret_key_2026'
@@ -17,7 +16,6 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Usuarios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +26,6 @@ def init_db():
         )
     ''')
     
-    # Productos y Precios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +37,6 @@ def init_db():
         )
     ''')
     
-    # Ventas
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +54,6 @@ def init_db():
         )
     ''')
     
-    # Stock de sodas por sabor
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stock_sodas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +63,6 @@ def init_db():
         )
     ''')
 
-    # Compras de Mercado
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mercado (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,7 +73,6 @@ def init_db():
         )
     ''')
 
-    # Cenas y Sobrantes
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cenas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +84,6 @@ def init_db():
         )
     ''')
 
-    # Usuarios por defecto
     cursor.execute("SELECT * FROM usuarios WHERE username = 'yamil'")
     if not cursor.fetchone():
         cursor.execute(
@@ -106,7 +98,6 @@ def init_db():
             ('cajero', generate_password_hash('puku2026'), 'cajero', 'Cajero PuKú')
         )
         
-    # Sabores base
     sabores_base = [
         "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
         "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
@@ -120,7 +111,6 @@ def init_db():
             for sab in sabores_base:
                 cursor.execute("INSERT INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sab, 6))
 
-    # Cargar Productos Iniciales
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
@@ -231,12 +221,9 @@ def pos():
 
 @app.route('/api/cobrar', methods=['POST'])
 def api_cobrar():
-    if 'usuario' not in session:
-        return jsonify({'status': 'error', 'message': 'No autorizado'}), 401
-    
+    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
     data = request.get_json()
-    if not data or not data.get('items'):
-        return jsonify({'status': 'error', 'message': 'Carrito vacío'}), 400
+    if not data or not data.get('items'): return jsonify({'status': 'error', 'message': 'Carrito vacío'}), 400
         
     cliente = data.get('cliente', 'Sin Nombre')
     tipo_pedido = data.get('tipo_pedido', 'Para Llevar')
@@ -256,8 +243,7 @@ def api_cobrar():
     cursor = conn.cursor()
     
     detalle_str = ", ".join([f"{item['cant']}x {item['nombre']}" for item in items])
-    if nota:
-        detalle_str += f" [OBS: {nota}]"
+    if nota: detalle_str += f" [OBS: {nota}]"
     
     cursor.execute(
         "INSERT INTO ventas (total, monto_efectivo, monto_qr, monto_peya, usuario, cliente, tipo_pedido, metodo_pago, nota, detalle) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -270,13 +256,11 @@ def api_cobrar():
         cursor.execute("UPDATE productos SET stock = stock - ? WHERE nombre = ?", (cant, nombre))
         
         if 'categoria_soda' in item and 'sabor_soda' in item and item['categoria_soda'] and item['sabor_soda']:
-            cat = item['categoria_soda']
-            sabor = item['sabor_soda']
-            cursor.execute("UPDATE stock_sodas SET cantidad = cantidad - ? WHERE categoria = ? AND sabor = ?", (cant, cat, sabor))
+            cursor.execute("UPDATE stock_sodas SET cantidad = cantidad - ? WHERE categoria = ? AND sabor = ?", 
+                           (cant, item['categoria_soda'], item['sabor_soda']))
         
     conn.commit()
     conn.close()
-    
     return jsonify({'status': 'success', 'message': f'¡Venta cobrada con éxito por {total:.2f} Bs!'})
 
 @app.route('/api/mercado/add', methods=['POST'])
@@ -303,7 +287,7 @@ def api_mercado_delete(item_id):
 
 @app.route('/api/cena/add', methods=['POST'])
 def api_cena_add():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
     data = request.get_json()
     prod = data['producto']
     cant = int(data['cantidad'])
@@ -344,6 +328,32 @@ def api_stock_update():
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
+
+@app.route('/api/soda/update', methods=['POST'])
+def api_soda_update():
+    if 'usuario' not in session or session.get('rol') != 'admin': 
+        return jsonify({'status': 'error', 'message': 'Acceso denegado. Solo el administrador puede modificar el stock de bebidas.'}), 403
+    data = request.get_json()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE stock_sodas SET cantidad = cantidad + ? WHERE categoria = ? AND sabor = ?", 
+                   (data['delta'], data['categoria'], data['sabor']))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success'})
+
+@app.route('/api/cierre/ejecutar', methods=['POST'])
+def api_cierre_ejecutar():
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM ventas")
+    cursor.execute("DELETE FROM cenas")
+    cursor.execute("DELETE FROM mercado")
+    cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina'")
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success', 'message': '¡Jornada cerrada y caja reiniciada correctamente!'})
 
 @app.route('/logout')
 def logout():
