@@ -59,7 +59,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Inicializar DB en Render / Gunicorn
+# Inicializar DB en Render / Gunicorn al arrancar
 with app.app_context():
     init_db()
 
