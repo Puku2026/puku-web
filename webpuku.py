@@ -164,7 +164,9 @@ def init_db():
             ('Pecho Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
             ('Contra Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
             ('Pierna Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Ala Brasa', 0.0, 4.50, 20, 'Stock Cocina')
+            ('Ala Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Hamburguesas', 0.0, 14.0, 10, 'Stock Cocina'),
+            ('Salchipapas', 0.0, 10.0, 10, 'Stock Cocina')
         ]
         cursor.executemany("INSERT INTO productos (nombre, precio, costo, stock, categoria) VALUES (?, ?, ?, ?, ?)", productos_iniciales)
     
@@ -359,7 +361,7 @@ def api_mercado_delete(item_id):
 
 @app.route('/api/cena/add', methods=['POST'])
 def api_cena_add():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
     data = request.get_json()
     prod = data['producto']
     cant = int(data['cantidad'])
@@ -408,8 +410,8 @@ def api_stock_update():
 
 @app.route('/api/soda/update', methods=['POST'])
 def api_soda_update():
-    if 'usuario' not in session or session.get('rol') != 'admin': 
-        return jsonify({'status': 'error', 'message': 'Acceso denegado. Solo el administrador puede modificar el stock de bebidas.'}), 403
+    if 'usuario' not in session: 
+        return jsonify({'status': 'error', 'message': 'Acceso no autorizado.'}), 403
     data = request.get_json()
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -463,10 +465,11 @@ def api_cierre_ejecutar():
     cursor.execute("DELETE FROM ventas")
     cursor.execute("DELETE FROM cenas")
     cursor.execute("DELETE FROM mercado")
-    cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina'")
+    # Solo reinicia las presas de pollo, conservando hamburguesas, salchipapas y bebidas
+    cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina' AND nombre NOT IN ('Hamburguesas', 'Salchipapas')")
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': '¡Jornada cerrada, caja reiniciada y stock de presas restablecido!'})
+    return jsonify({'status': 'success', 'message': '¡Jornada cerrada y caja reiniciada! Stock de presas restablecido, stock de hamburguesas, salchipapas y bebidas conservado.'})
 
 @app.route('/logout')
 def logout():
