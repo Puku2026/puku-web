@@ -16,6 +16,7 @@ def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Usuarios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,17 +27,19 @@ def init_db():
         )
     ''')
     
+    # Productos y Precios
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL UNIQUE,
             precio REAL NOT NULL,
             costo REAL DEFAULT 0.0,
-            stock INTEGER DEFAULT 100,
+            stock INTEGER DEFAULT 20,
             categoria TEXT NOT NULL
         )
     ''')
     
+    # Ventas
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ventas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,6 +57,7 @@ def init_db():
         )
     ''')
     
+    # Stock de sodas por sabor
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stock_sodas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +67,7 @@ def init_db():
         )
     ''')
 
+    # Mercado / Insumos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mercado (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,6 +78,7 @@ def init_db():
         )
     ''')
 
+    # Cenas y Sobrantes
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cenas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,10 +86,20 @@ def init_db():
             cantidad INTEGER NOT NULL,
             costo_u REAL NOT NULL,
             subtotal REAL NOT NULL,
+            es_soda INTEGER DEFAULT 0,
             fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
+    # Configuración de Costos Globales
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS costos_config (
+            clave TEXT PRIMARY KEY,
+            costo REAL NOT NULL
+        )
+    ''')
+
+    # Usuarios Base
     cursor.execute("SELECT * FROM usuarios WHERE username = 'yamil'")
     if not cursor.fetchone():
         cursor.execute(
@@ -98,6 +114,7 @@ def init_db():
             ('cajero', generate_password_hash('puku2026'), 'cajero', 'Cajero PuKú')
         )
         
+    # Sabores
     sabores_base = [
         "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
         "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
@@ -111,6 +128,18 @@ def init_db():
             for sab in sabores_base:
                 cursor.execute("INSERT INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sab, 6))
 
+    # Costos Base Sodas
+    costos_sodas_iniciales = [
+        ('Pekes (Sodas)', 3.50),
+        ('Personal (Sodas)', 4.80),
+        ('2 L (Sodas)', 13.00),
+        ('Pollo (Presa)', 4.50),
+        ('Guarnición', 5.00)
+    ]
+    for c_clave, c_val in costos_sodas_iniciales:
+        cursor.execute("INSERT OR IGNORE INTO costos_config (clave, costo) VALUES (?, ?)", (c_clave, c_val))
+
+    # Cargar Productos Iniciales
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
@@ -122,6 +151,10 @@ def init_db():
             ('¼ Pierna Broaste', 30.00, 14.00, 20, 'Broaste'),
             ('½ Pollo Broaste', 55.00, 28.00, 15, 'Broaste'),
             ('1 Pollo Broaste', 110.00, 56.00, 10, 'Broaste'),
+            ('Eco Pierna Brasa', 15.00, 9.50, 20, 'Brasa'),
+            ('Eco Contra Brasa', 15.00, 9.50, 20, 'Brasa'),
+            ('Eco Pecho Brasa', 16.00, 9.50, 20, 'Brasa'),
+            ('Eco Ala Brasa', 16.00, 9.50, 20, 'Brasa'),
             ('¼ Pecho Brasa', 30.00, 14.00, 20, 'Brasa'),
             ('¼ Pierna Brasa', 30.00, 14.00, 20, 'Brasa'),
             ('½ Pollo Brasa', 55.00, 28.00, 15, 'Brasa'),
@@ -136,9 +169,13 @@ def init_db():
             ('Porcion Papa', 6.00, 2.50, 50, 'Extras'),
             ('Porcion Arroz', 6.00, 2.50, 50, 'Extras'),
             ('Pecho', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Pierna', 0.0, 4.50, 20, 'Stock Cocina'),
             ('Contra', 0.0, 4.50, 20, 'Stock Cocina'),
-            ('Ala', 0.0, 4.50, 20, 'Stock Cocina')
+            ('Pierna', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Ala', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Pecho Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Contra Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Pierna Brasa', 0.0, 4.50, 20, 'Stock Cocina'),
+            ('Ala Brasa', 0.0, 4.50, 20, 'Stock Cocina')
         ]
         cursor.executemany("INSERT INTO productos (nombre, precio, costo, stock, categoria) VALUES (?, ?, ?, ?, ?)", productos_iniciales)
     
@@ -168,6 +205,7 @@ def login():
         
         if user and check_password_hash(user['password'], password):
             session['usuario'] = user['nombre_completo']
+            session['username'] = username
             session['rol'] = user['rol']
             return redirect(url_for('pos'))
         else:
@@ -197,6 +235,12 @@ def pos():
     cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC")
     ventas_list = cursor.fetchall()
 
+    cursor.execute("SELECT * FROM usuarios ORDER BY id DESC")
+    usuarios_list = cursor.fetchall()
+
+    cursor.execute("SELECT clave, costo FROM costos_config")
+    costos_config_db = dict(cursor.fetchall())
+
     conn.close()
     
     stock_diccionario = {p['nombre']: p['stock'] for p in productos}
@@ -210,6 +254,7 @@ def pos():
 
     return render_template('pos.html', 
                            usuario=session['usuario'], 
+                           username=session.get('username'),
                            rol=session.get('rol', 'cajero'), 
                            productos=productos,
                            stock=stock_diccionario,
@@ -217,7 +262,9 @@ def pos():
                            sabores=sabores_lista,
                            mercado=mercado_items,
                            cenas=cenas_items,
-                           ventas=ventas_list)
+                           ventas=ventas_list,
+                           usuarios=usuarios_list,
+                           costos_config=costos_config_db)
 
 @app.route('/api/cobrar', methods=['POST'])
 def api_cobrar():
@@ -292,12 +339,13 @@ def api_cena_add():
     prod = data['producto']
     cant = int(data['cantidad'])
     costo_u = float(data['costo_u'])
+    es_soda = 1 if data.get('es_soda') else 0
     subtotal = cant * costo_u
     
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO cenas (producto, cantidad, costo_u, subtotal) VALUES (?, ?, ?, ?)",
-                   (prod, cant, costo_u, subtotal))
+    cursor.execute("INSERT INTO cenas (producto, cantidad, costo_u, subtotal, es_soda) VALUES (?, ?, ?, ?, ?)",
+                   (prod, cant, costo_u, subtotal, es_soda))
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
@@ -312,6 +360,10 @@ def api_precios_update():
         cursor.execute("UPDATE productos SET precio = ? WHERE id = ?", (float(p_val), prod_id))
     for prod_id, c_val in data.get('costos', {}).items():
         cursor.execute("UPDATE productos SET costo = ? WHERE id = ?", (float(c_val), prod_id))
+    
+    for clave, c_val in data.get('costos_sodas', {}).items():
+        cursor.execute("INSERT OR REPLACE INTO costos_config (clave, costo) VALUES (?, ?)", (clave, float(c_val)))
+
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
@@ -342,6 +394,42 @@ def api_soda_update():
     conn.close()
     return jsonify({'status': 'success'})
 
+@app.route('/api/usuarios/add', methods=['POST'])
+def api_usuarios_add():
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    nombre = data.get('nombre_completo')
+    rol = data.get('rol', 'cajero')
+
+    if not username or not password or not nombre:
+        return jsonify({'status': 'error', 'message': 'Faltan datos obligatorios'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO usuarios (username, password, rol, nombre_completo) VALUES (?, ?, ?, ?)",
+            (username, generate_password_hash(password), rol, nombre)
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success', 'message': f'Usuario {username} creado con éxito'})
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({'status': 'error', 'message': 'El nombre de usuario ya existe'}), 400
+
+@app.route('/api/usuarios/delete/<int:user_id>', methods=['DELETE'])
+def api_usuarios_delete(user_id):
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'success'})
+
 @app.route('/api/cierre/ejecutar', methods=['POST'])
 def api_cierre_ejecutar():
     if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
@@ -353,7 +441,7 @@ def api_cierre_ejecutar():
     cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina'")
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': '¡Jornada cerrada y caja reiniciada correctamente!'})
+    return jsonify({'status': 'success', 'message': '¡Jornada cerrada, caja reiniciada y stock de presas restablecido!'})
 
 @app.route('/logout')
 def logout():
