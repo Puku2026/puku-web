@@ -27,7 +27,7 @@ def init_db():
         )
     ''')
     
-    # 2. Tabla de productos (con soporte para stock y precio)
+    # 2. Tabla de productos (con stock y categoría)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS productos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,21 +57,34 @@ def init_db():
             ('yamil', hashed_password, 'admin', 'Yamil Callizaya')
         )
         
+    # Usuario cajero de prueba
+    cursor.execute("SELECT * FROM usuarios WHERE username = 'cajero'")
+    if not cursor.fetchone():
+        hashed_password = generate_password_hash('puku2026')
+        cursor.execute(
+            "INSERT INTO usuarios (username, password, rol, nombre_completo) VALUES (?, ?, ?, ?)",
+            ('cajero', hashed_password, 'cajero', 'Cajero PuKú')
+        )
+        
     # Productos iniciales de prueba si la tabla está vacía
     cursor.execute("SELECT COUNT(*) FROM productos")
     if cursor.fetchone()[0] == 0:
         productos_iniciales = [
-            ('Pollo Broaster (Presa)', 18.00, 50, 'Pollos'),
-            ('Salchipapa Pukú', 25.00, 40, 'Fast Food'),
-            ('Hamburguesa Clásica', 20.00, 30, 'Hamburguesas'),
-            ('Refresco 2L', 15.00, 25, 'Bebidas')
+            ('Eco Pierna', 15.00, 50, 'Broaste'),
+            ('Eco Contra', 15.00, 50, 'Broaste'),
+            ('Eco Pecho', 16.00, 50, 'Broaste'),
+            ('Eco Ala', 16.00, 50, 'Broaste'),
+            ('1/4 Pecho', 30.00, 40, 'Broaste'),
+            ('1/4 Pierna', 30.00, 40, 'Broaste'),
+            ('1/2 Pollo', 55.00, 30, 'Broaste'),
+            ('1 Pollo', 110.00, 20, 'Broaste')
         ]
         cursor.executemany("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     
     conn.commit()
     conn.close()
 
-# Inicializar Base de Datos al arrancar en local o en Render
+# Inicializar Base de Datos al arrancar
 with app.app_context():
     init_db()
 
@@ -115,24 +128,62 @@ def pos():
     productos = cursor.fetchall()
     conn.close()
     
-    # Diccionario de stock para evitar errores en plantillas que buscan stock['Nombre'] o stock['Pecho']
     stock_diccionario = {p['nombre']: p['stock'] for p in productos}
-    stock_diccionario['Pecho'] = stock_diccionario.get('Pollo Broaster (Presa)', 50)
     
     return render_template('pos.html', 
                            usuario=session['usuario'], 
-                           rol=session.get('rol', 'admin'), 
+                           rol=session.get('rol', 'cajero'), 
                            productos=productos,
                            stock=stock_diccionario)
 
-@app.route('/usuarios')
-def usuarios():
+@app.route('/productos', methods=['GET', 'POST'])
+def productos():
     if 'usuario' not in session:
         return redirect(url_for('login'))
     
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM usuarios")
+    
+    if request.method == 'POST' and session.get('rol') == 'admin':
+        nombre = request.form['nombre']
+        precio = float(request.form['precio'])
+        stock = int(request.form['stock'])
+        categoria = request.form['categoria']
+        
+        cursor.execute("INSERT INTO productos (nombre, precio, stock, categoria) VALUES (?, ?, ?, ?)",
+                       (nombre, precio, stock, categoria))
+        conn.commit()
+        flash('Producto agregado exitosamente', 'success')
+        
+    cursor.execute("SELECT * FROM productos")
+    lista_productos = cursor.fetchall()
+    conn.close()
+    
+    return render_template('productos.html', productos=lista_productos, rol=session.get('rol'))
+
+@app.route('/ventas')
+def ventas():
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        flash('Acceso denegado. Solo administradores.', 'danger')
+        return redirect(url_for('pos'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC")
+    lista_ventas = cursor.fetchall()
+    conn.close()
+    
+    return render_template('ventas.html', ventas=lista_ventas)
+
+@app.route('/usuarios')
+def usuarios():
+    if 'usuario' not in session or session.get('rol') != 'admin':
+        flash('Acceso denegado.', 'danger')
+        return redirect(url_for('pos'))
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, rol, nombre_completo FROM usuarios")
     lista_usuarios = cursor.fetchall()
     conn.close()
     
