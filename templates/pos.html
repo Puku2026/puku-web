@@ -83,7 +83,7 @@
                     </div>
                 </div>
 
-                <!-- Cenas (Accesible por Cajeros y Admin) -->
+                <!-- Cenas -->
                 <div class="tab-pane fade" id="cenas">
                     <h6 class="text-danger mb-3">🌙 Anotar Sobrantes / Cenas del Turno</h6>
                     <div class="row g-2 mb-3">
@@ -110,12 +110,15 @@
                     </table>
                 </div>
 
-                <!-- Historial y Cierre (Accesible por Cajeros y Admin) -->
+                <!-- Historial y Cierre (Con Opción de Imprimir Comprobantes) -->
                 <div class="tab-pane fade" id="reporte">
-                    <h6 class="text-info mb-3">📊 Historial de Ventas y Cierre de Jornada</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-info m-0">📊 Historial de Ventas y Cierre de Jornada</h6>
+                        <button onclick="imprimirReporteGeneral()" class="btn btn-outline-warning btn-sm">🖨️ Imprimir / Guardar Reporte</button>
+                    </div>
                     <div style="max-height: 250px; overflow-y: auto;" class="mb-3">
-                        <table class="table table-dark table-striped table-sm fs-7">
-                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Detalle de Compra</th><th>Total</th></tr></thead>
+                        <table class="table table-dark table-striped table-sm fs-7" id="tabla-ventas-historial">
+                            <thead><tr><th>Fecha/Hora</th><th>Cajero</th><th>Cliente</th><th>Pago</th><th>Detalle</th><th>Total</th><th>Acción</th></tr></thead>
                             <tbody>
                                 {% for v in ventas %}
                                 <tr>
@@ -125,6 +128,7 @@
                                     <td>{{ v['metodo_pago'] }}</td>
                                     <td>{{ v['detalle'] }}</td>
                                     <td class="text-warning fw-bold">{{ v['total'] }} Bs</td>
+                                    <td><button onclick="imprimirComprobanteVenta('{{ v['fecha'] }}', '{{ v['usuario'] }}', '{{ v['cliente'] }}', '{{ v['metodo_pago'] }}', '{{ v['detalle'] }}', {{ v['total'] }})" class="btn btn-outline-info btn-sm py-0 px-1">🖨️</button></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -307,7 +311,7 @@
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
 
-        <!-- Stock Cocina Alto Contraste (Incluye Salchipapas y Hamburguesas) -->
+        <!-- Stock Cocina Alto Contraste -->
         <div class="card card-dark p-3">
             <h6 class="text-info mb-2">📦 Stock Cocina (Presas, Salchipapas y Burger)</h6>
             <div style="max-height: 220px; overflow-y: auto;">
@@ -402,6 +406,17 @@
 let carrito = [];
 const saboresDisponibles = {{ sabores | tojson }};
 
+// Sonido de notificación de caja registradora al realizar una venta
+function reproducirSonidoVenta() {
+    try {
+        let audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.8;
+        audio.play().catch(e => console.log("Audio bloqueado por políticas del navegador hasta interacción", e));
+    } catch (err) {
+        console.log("No se pudo reproducir el sonido", err);
+    }
+}
+
 function evaluarMetodoPago() {
     let m = document.getElementById("metodo_pago").value;
     let p = document.getElementById("panel_mixto");
@@ -484,7 +499,85 @@ function cobrarPedido() {
     fetch("/api/cobrar", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cliente: document.getElementById("cliente").value || "Cliente", tipo_pedido: document.getElementById("tipo_pedido").value, metodo_pago: m, nota: document.getElementById("nota_pedido").value, monto_efectivo: ef, monto_qr: qr, items: carrito, total })
-    }).then(res => res.json()).then(data => { alert(data.message); vaciarCarrito(); location.reload(); });
+    }).then(res => res.json()).then(data => { 
+        reproducirSonidoVenta();
+        alert(data.message); 
+        vaciarCarrito(); 
+        location.reload(); 
+    });
+}
+
+// Funciones para imprimir comprobantes individuales y reporte general
+function imprimirComprobanteVenta(fecha, cajero, cliente, metodoPago, detalle, total) {
+    let ventana = window.open('', '_blank', 'width=400,height=600');
+    ventana.document.write(`
+        <html>
+        <head>
+            <title>Comprobante de Venta - Pollos PuKú</title>
+            <style>
+                body { font-family: monospace; padding: 15px; color: #000; width: 300px; margin: auto; }
+                h3, h4 { text-align: center; margin: 5px 0; }
+                hr { border: dashed 1px #000; }
+                .info { font-size: 12px; margin-bottom: 10px; }
+                .total { font-size: 16px; font-weight: bold; text-align: right; margin-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <h3>🍗 POLLOS PUKÚ 🍗</h3>
+            <h4>Comprobante de Venta</h4>
+            <hr>
+            <div class="info">
+                <strong>Fecha:</strong> ${fecha}<br>
+                <strong>Cajero:</strong> ${cajero}<br>
+                <strong>Cliente:</strong> ${cliente}<br>
+                <strong>Método de Pago:</strong> ${metodoPago}
+            </div>
+            <hr>
+            <div class="info">
+                <strong>Detalle:</strong><br>
+                ${detalle}
+            </div>
+            <hr>
+            <div class="total">
+                TOTAL: ${total.toFixed(2)} Bs
+            </div>
+            <br>
+            <p style="text-align: center; font-size: 11px;">¡Gracias por su preferencia!</p>
+            <script>
+                window.onload = function() { window.print(); window.close(); }
+            <\/script>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
+}
+
+function imprimirReporteGeneral() {
+    let contenidoTabla = document.getElementById("tabla-ventas-historial").outerHTML;
+    let ventana = window.open('', '_blank', 'width=800,height=600');
+    ventana.document.write(`
+        <html>
+        <head>
+            <title>Reporte de Historial de Ventas - Pollos PuKú</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
+                h2 { text-align: center; color: #b22222; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+                th { background-color: #f4f4f4; }
+            </style>
+        </head>
+        <body>
+            <h2>🍗 POLLOS PUKÚ - REPORTE DE HISTORIAL DE VENTAS 🍗</h2>
+            <p><strong>Fecha de impresión:</strong> ${new Date().toLocaleString()}</p>
+            ${contenidoTabla}
+            <script>
+                window.onload = function() { window.print(); window.close(); }
+            <\/script>
+        </body>
+        </html>
+    `);
+    ventana.document.close();
 }
 
 function agregarMercado() {
