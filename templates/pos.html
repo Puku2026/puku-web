@@ -13,18 +13,18 @@
     <div class="col-md-8">
         <div class="card card-dark p-3 mb-3">
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item"><button class="nav-link active bg-warning text-dark fw-bold me-1" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#extras">➕ Extras</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku active" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#extras">➕ Extras</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#mercado">🛒 Mercado</button></li>
                 {% if rol == 'admin' %}
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios / Costos</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#usuarios">👥 Cajeros</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial y Cierre</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light fw-bold me-1" data-bs-toggle="pill" data-bs-target="#stocksodas">🥤 Admin Sodas</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#precios">⚙ Precios / Costos</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#cenas">🌙 Cenas</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#usuarios">👥 Cajeros</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#reporte">📊 Historial y Cierre</button></li>
+                <li class="nav-item"><button class="nav-link tab-puku" data-bs-toggle="pill" data-bs-target="#stocksodas">🥤 Admin Sodas</button></li>
                 {% endif %}
             </ul>
 
@@ -32,54 +32,50 @@
                 <!-- Broaste -->
                 <div class="tab-pane fade show active" id="broaste">
                     <div class="row g-2">
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pierna', 15)" class="btn btn-warning w-100 py-3 fw-bold">Eco Pierna<br>15 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Contra', 15)" class="btn btn-warning w-100 py-3 fw-bold">Eco Contra<br>15 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pecho', 16)" class="btn btn-warning w-100 py-3 fw-bold">Eco Pecho<br>16 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Ala', 16)" class="btn btn-warning w-100 py-3 fw-bold">Eco Ala<br>16 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pecho Broaste', 30)" class="btn btn-warning w-100 py-3 fw-bold">¼ Pecho<br>30 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pierna Broaste', 30)" class="btn btn-warning w-100 py-3 fw-bold">¼ Pierna<br>30 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('½ Pollo Broaste', 55)" class="btn btn-warning w-100 py-3 fw-bold">½ Pollo<br>55 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('1 Pollo Broaste', 110)" class="btn btn-warning w-100 py-3 fw-bold">1 Pollo<br>110 Bs</button></div>
+                        {% for p in productos if p['categoria'] == 'Broaste' %}
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn btn-warning w-100 py-3 fw-bold">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
+                        {% endfor %}
                     </div>
                 </div>
 
-                <!-- Brasa (Incluye Económicos) -->
+                <!-- Brasa -->
                 <div class="tab-pane fade" id="brasa">
                     <div class="row g-2">
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pierna Brasa', 15)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Pierna Brasa<br>15 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Contra Brasa', 15)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Contra Brasa<br>15 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Pecho Brasa', 16)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Pecho Brasa<br>16 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Eco Ala Brasa', 16)" class="btn btn-danger w-100 py-3 fw-bold text-white">Eco Ala Brasa<br>16 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pecho Brasa', 30)" class="btn btn-danger w-100 py-3 fw-bold text-white">¼ Pecho Brasa<br>30 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('¼ Pierna Brasa', 30)" class="btn btn-danger w-100 py-3 fw-bold text-white">¼ Pierna Brasa<br>30 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('½ Pollo Brasa', 55)" class="btn btn-danger w-100 py-3 fw-bold text-white">½ Pollo Brasa<br>55 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('1 Pollo Brasa', 110)" class="btn btn-danger w-100 py-3 fw-bold text-white">1 Pollo Brasa<br>110 Bs</button></div>
+                        {% for p in productos if p['categoria'] == 'Brasa' %}
+                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn btn-danger w-100 py-3 fw-bold text-white">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
+                        {% endfor %}
                     </div>
                 </div>
 
                 <!-- Especiales -->
                 <div class="tab-pane fade" id="especiales">
+                    {% if rol == 'admin' %}
+                    <button onclick="abrirModalNuevoProducto('Especiales')" class="btn btn-info btn-sm mb-2 text-dark fw-bold">➕ Agregar Nuevo Especial</button>
+                    {% endif %}
                     <div class="row g-2">
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Simple', 17)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Simple<br>17 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Clásica', 20)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Clásica<br>20 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Hamburguesa Doble', 30)" class="btn btn-info w-100 py-3 fw-bold text-dark">Hamburguesa Doble<br>30 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchipapas', 15)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchipapas<br>15 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchiburguer', 30)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchiburguer<br>30 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Salchipollo', 25)" class="btn btn-info w-100 py-3 fw-bold text-dark">Salchipollo<br>25 Bs</button></div>
+                        {% for p in productos if p['categoria'] == 'Especiales' %}
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn btn-info w-100 py-3 fw-bold text-dark">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
+                        {% endfor %}
                     </div>
                 </div>
 
                 <!-- Extras -->
                 <div class="tab-pane fade" id="extras">
+                    {% if rol == 'admin' %}
+                    <button onclick="abrirModalNuevoProducto('Extras')" class="btn btn-purple btn-sm mb-2 text-white fw-bold" style="background-color: #7209b7;">➕ Agregar Nuevo Extra</button>
+                    {% endif %}
                     <div class="row g-2">
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Presa Extra', 10)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Presa Extra<br>10 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Papa', 6)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Papa<br>6 Bs</button></div>
-                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('Porcion Arroz', 6)" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">Porción Arroz<br>6 Bs</button></div>
+                        {% for p in productos if p['categoria'] == 'Extras' %}
+                        <div class="col-6 col-md-4"><button onclick="agregarAlCarrito('{{ p['nombre'] }}', {{ p['precio'] }})" class="btn text-white w-100 py-3 fw-bold" style="background-color: #7209b7;">{{ p['nombre'] }}<br>{{ p['precio'] }} Bs</button></div>
+                        {% endfor %}
                     </div>
                 </div>
 
                 <!-- Sodas Venta -->
                 <div class="tab-pane fade" id="sodas">
+                    {% if rol == 'admin' %}
+                    <button onclick="abrirModalNuevoSabor()" class="btn btn-success btn-sm mb-2 fw-bold">➕ Agregar Nueva Bebida / Sabor</button>
+                    {% endif %}
                     <div class="row g-2">
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 5.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>5.00 Bs</button></div>
                         <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 8.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>8.00 Bs</button></div>
@@ -173,7 +169,7 @@
                     <h6 class="text-info mb-3">👥 Registrar Nuevos Cajeros / Usuarios</h6>
                     <div class="row g-2 mb-3">
                         <div class="col-3"><input type="text" id="u_username" class="form-control form-control-sm bg-dark text-light" placeholder="Usuario (Ej: juan)"></div>
-                        <div class="col-3"><input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Contraseña"></div>
+                        <div class="col-3"><input type="password" id="u_password" class="form-control form-control-sm bg-dark text-light" placeholder="Contraseña de Acceso"></div>
                         <div class="col-4"><input type="text" id="u_nombre" class="form-control form-control-sm bg-dark text-light" placeholder="Nombre Completo"></div>
                         <div class="col-2"><button onclick="crearUsuario()" class="btn btn-success btn-sm w-100">➕ Crear</button></div>
                     </div>
@@ -321,9 +317,69 @@
   </div>
 </div>
 
+<!-- MODAL NUEVO PRODUCTO -->
+<div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-warning" id="tituloModalProd">Agregar Producto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="prod_cat">
+        <div class="mb-2">
+            <label class="form-label fs-7">Nombre del Producto:</label>
+            <input type="text" id="prod_nombre" class="form-control form-control-sm bg-dark text-light">
+        </div>
+        <div class="mb-2">
+            <label class="form-label fs-7">Precio de Venta (Bs):</label>
+            <input type="number" id="prod_precio" class="form-control form-control-sm bg-dark text-light">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fs-7">Costo de Compra (Bs):</label>
+            <input type="number" id="prod_costo" class="form-control form-control-sm bg-dark text-light">
+        </div>
+        <button onclick="guardarNuevoProducto()" class="btn btn-primary w-100 btn-sm fw-bold">💾 Guardar Producto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO SABOR DE SODA -->
+<div class="modal fade" id="modalNuevoSabor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-success">Agregar Nueva Bebida / Sabor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label fs-7">Nombre / Sabor:</label>
+            <input type="text" id="sabor_nombre" class="form-control form-control-sm bg-dark text-light">
+        </div>
+        <button onclick="guardarNuevoSabor()" class="btn btn-success w-100 btn-sm fw-bold">💾 Guardar Sabor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.tab-puku {
+    background-color: #343a40 !important;
+    color: #f8f9fa !important;
+    font-weight: bold;
+    margin-right: 4px;
+}
+.tab-puku.active {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+</style>
+
 <script>
 let carrito = [];
-const saboresDisponibles = ["Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"];
+const saboresDisponibles = {{ sabores | tojson }};
 
 function evaluarMetodoPago() {
     let m = document.getElementById("metodo_pago").value;
@@ -351,6 +407,37 @@ function abrirSelectorSoda(categoria, precio) {
 function elegirSaborSoda(categoria, sabor, precio) {
     agregarAlCarrito(`Soda ${categoria}`, precio, categoria, sabor);
     bootstrap.Modal.getInstance(document.getElementById('modalSaborSoda')).hide();
+}
+
+function abrirModalNuevoProducto(cat) {
+    document.getElementById("prod_cat").value = cat;
+    document.getElementById("tituloModalProd").innerText = `Agregar Nuevo Producto (${cat})`;
+    new bootstrap.Modal(document.getElementById('modalNuevoProducto')).show();
+}
+
+function guardarNuevoProducto() {
+    let cat = document.getElementById("prod_cat").value;
+    let nombre = document.getElementById("prod_nombre").value;
+    let precio = document.getElementById("prod_precio").value;
+    let costo = document.getElementById("prod_costo").value;
+    if(!nombre || !precio) return alert("Completa el nombre y precio");
+    fetch("/api/producto/add", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, precio, costo, categoria: cat })
+    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
+}
+
+function abrirModalNuevoSabor() {
+    new bootstrap.Modal(document.getElementById('modalNuevoSabor')).show();
+}
+
+function guardarNuevoSabor() {
+    let sabor = document.getElementById("sabor_nombre").value;
+    if(!sabor) return alert("Ingresa un nombre");
+    fetch("/api/sabor/add", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sabor })
+    }).then(res => res.json()).then(data => { alert(data.message); location.reload(); });
 }
 
 function renderizarCarrito() {
@@ -401,7 +488,7 @@ function crearUsuario() {
     let username = document.getElementById("u_username").value;
     let password = document.getElementById("u_password").value;
     let nombre_completo = document.getElementById("u_nombre").value;
-    if(!username || !password || !nombre_completo) return alert("Completa todos los campos");
+    if(!username || !password || !nombre_completo) return alert("Completa todos los campos, incluyendo la contraseña");
     fetch("/api/usuarios/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
