@@ -7,6 +7,9 @@ app = Flask(__name__)
 app.secret_key = 'puku_secret_key_2026'
 DATABASE = 'puku.db'
 
+# Variable global para rastrear últimas ventas para la notificación en tiempo real
+ULTIMA_VENTA_ID = 0
+
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -89,6 +92,15 @@ def init_db():
         CREATE TABLE IF NOT EXISTS costos_config (
             clave TEXT PRIMARY KEY,
             costo REAL NOT NULL
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reportes_cierres (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha_cierre TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            cajero TEXT NOT NULL,
+            contenido_reporte TEXT NOT NULL
         )
     ''')
 
@@ -233,6 +245,9 @@ def pos():
     cursor.execute("SELECT * FROM usuarios ORDER BY id DESC")
     usuarios_list = cursor.fetchall()
 
+    cursor.execute("SELECT * FROM reportes_cierres ORDER BY id DESC")
+    reportes_list = cursor.fetchall()
+
     cursor.execute("SELECT clave, costo FROM costos_config")
     costos_config_db = dict(cursor.fetchall())
 
@@ -259,11 +274,28 @@ def pos():
                            cenas=cenas_items,
                            ventas=ventas_list,
                            usuarios=usuarios_list,
+                           reportes=reportes_list,
                            costos_config=costos_config_db)
+
+@app.route('/api/check_nuevas_ventas')
+def check_nuevas_ventas():
+    global ULTIMA_VENTA_ID
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(id) FROM ventas")
+    max_id = cursor.fetchone()[0] or 0
+    conn.close()
+    
+    hay_nueva = False
+    if max_id > ULTIMA_VENTA_ID and ULTIMA_VENTA_ID != 0:
+        hay_nueva = True
+    
+    ULTIMA_VENTA_ID = max_id
+    return jsonify({'nueva_venta': hay_nueva, 'max_id': max_id})
 
 @app.route('/api/producto/add', methods=['POST'])
 def api_producto_add():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
+    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
     data = request.get_json()
     nombre = data.get('nombre')
     precio = float(data.get('precio', 0.0))
@@ -277,25 +309,10 @@ def api_producto_add():
                        (nombre, precio, costo, categoria))
         conn.commit()
         conn.close()
-        return jsonify({'status': 'success', 'message': f'Producto {nombre} agregado y guardado con éxito'})
+        return jsonify({'status': 'success', 'message': f'Producto {nombre} agregado con éxito'})
     except sqlite3.IntegrityError:
         conn.close()
         return jsonify({'status': 'error', 'message': 'El producto ya existe'}), 400
-
-@app.route('/api/sabor/add', methods=['POST'])
-def api_sabor_add():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    sabor = data.get('sabor')
-    if not sabor: return jsonify({'status': 'error', 'message': 'El sabor no puede estar vacío'}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    for cat in ["Pekes", "Personales", "2 Litros"]:
-        cursor.execute("INSERT OR IGNORE INTO stock_sodas (categoria, sabor, cantidad) VALUES (?, ?, ?)", (cat, sabor, 6))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success', 'message': f'Sabor {sabor} agregado con éxito'})
 
 @app.route('/api/cobrar', methods=['POST'])
 def api_cobrar():
@@ -339,140 +356,60 @@ def api_cobrar():
         
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': f'¡Venta cobrada con éxito por {total:.2f} Bs!'})
-
-@app.route('/api/mercado/add', methods=['POST'])
-def api_mercado_add():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO mercado (insumo, cantidad, costo) VALUES (?, ?, ?)",
-                   (data['insumo'], data['cantidad'], float(data['costo'])))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/mercado/delete/<int:item_id>', methods=['DELETE'])
-def api_mercado_delete(item_id):
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM mercado WHERE id = ?", (item_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/cena/add', methods=['POST'])
-def api_cena_add():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    prod = data['producto']
-    cant = int(data['cantidad'])
-    costo_u = float(data['costo_u'])
-    es_soda = 1 if data.get('es_soda') else 0
-    subtotal = cant * costo_u
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO cenas (producto, cantidad, costo_u, subtotal, es_soda) VALUES (?, ?, ?, ?, ?)",
-                   (prod, cant, costo_u, subtotal, es_soda))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/precios/update', methods=['POST'])
-def api_precios_update():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    for prod_id, p_val in data.get('precios', {}).items():
-        cursor.execute("UPDATE productos SET precio = ? WHERE id = ?", (float(p_val), prod_id))
-    for prod_id, c_val in data.get('costos', {}).items():
-        cursor.execute("UPDATE productos SET costo = ? WHERE id = ?", (float(c_val), prod_id))
-    
-    for clave, c_val in data.get('costos_sodas', {}).items():
-        cursor.execute("INSERT OR REPLACE INTO costos_config (clave, costo) VALUES (?, ?)", (clave, float(c_val)))
-
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/stock/update', methods=['POST'])
-def api_stock_update():
-    if 'usuario' not in session: return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    item = data.get('item')
-    delta = data.get('delta', 0)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE productos SET stock = stock + ? WHERE nombre = ?", (delta, item))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/soda/update', methods=['POST'])
-def api_soda_update():
-    if 'usuario' not in session: 
-        return jsonify({'status': 'error', 'message': 'Acceso no autorizado.'}), 403
-    data = request.get_json()
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE stock_sodas SET cantidad = cantidad + ? WHERE categoria = ? AND sabor = ?", 
-                   (data['delta'], data['categoria'], data['sabor']))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
-
-@app.route('/api/usuarios/add', methods=['POST'])
-def api_usuarios_add():
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    nombre = data.get('nombre_completo')
-    rol = data.get('rol', 'cajero')
-
-    if not username or not password or not nombre:
-        return jsonify({'status': 'error', 'message': 'Faltan datos obligatorios'}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(
-            "INSERT INTO usuarios (username, password, rol, nombre_completo) VALUES (?, ?, ?, ?)",
-            (username, generate_password_hash(password), rol, nombre)
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({'status': 'success', 'message': f'Usuario {username} creado con éxito'})
-    except sqlite3.IntegrityError:
-        conn.close()
-        return jsonify({'status': 'error', 'message': 'El nombre de usuario ya existe'}), 400
-
-@app.route('/api/usuarios/delete/<int:user_id>', methods=['DELETE'])
-def api_usuarios_delete(user_id):
-    if 'usuario' not in session or session.get('rol') != 'admin': return jsonify({'status': 'error'}), 401
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
-    conn.commit()
-    conn.close()
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success', 'message': f'¡Venta cobrada por {total:.2f} Bs!'})
 
 @app.route('/api/cierre/ejecutar', methods=['POST'])
 def api_cierre_ejecutar():
     if 'usuario' not in session: return jsonify({'status': 'error'}), 401
+    
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM ventas")
+    ventas = cursor.fetchall()
+    
+    cursor.execute("SELECT * FROM cenas")
+    cenas = cursor.fetchall()
+    
+    total_pedidos = len(ventas)
+    recaudacion_bruta = sum([v['total'] for v in ventas])
+    efectivo = sum([v['monto_efectivo'] for v in ventas])
+    qr = sum([v['monto_qr'] for v in ventas])
+    peya = sum([v['monto_peya'] for v in ventas])
+    caja_fisica = efectivo + qr
+    
+    # Generar texto del arqueo
+    ahora = datetime.datetime.now().strftime("%d/%m/%Y - %H:%M")
+    reporte_txt = f"""POLLOS PUKÚ - ARQUEO FINAL DE CAJA
+Fecha / Hora: {ahora}
+Cajero(s) del Turno: {session['usuario']}
+==================================================
+
+• TOTAL PEDIDOS ATENDIDOS : {total_pedidos}
+• RECAUDACIÓN BRUTA TOTAL : {recaudacion_bruta:.2f} Bs
+
+--------------------------------------------------
+  💳 DESGLOSE DE INGRESOS EN CAJA:
+--------------------------------------------------
+• En Efectivo        : {efectivo:.2f} Bs
+• Transferencias QR  : {qr:.2f} Bs
+👈 TOTAL CAJA FÍSICA : {caja_fisica:.2f} Bs
+🚚 PedidosYa (PeYa)  : {peya:.2f} Bs (Fuera de Caja)
+==================================================
+"""
+    # Guardar en base de datos el reporte archivado
+    cursor.execute("INSERT INTO reportes_cierres (cajero, contenido_reporte) VALUES (?, ?)",
+                   (session['usuario'], reporte_txt))
+
+    # Limpiar tablas de la jornada
     cursor.execute("DELETE FROM ventas")
     cursor.execute("DELETE FROM cenas")
     cursor.execute("DELETE FROM mercado")
     cursor.execute("UPDATE productos SET stock = 20 WHERE categoria = 'Stock Cocina' AND nombre NOT IN ('Hamburguesas', 'Salchipapas')")
+    
     conn.commit()
     conn.close()
-    return jsonify({'status': 'success', 'message': '¡Jornada cerrada y caja reiniciada! Stock de presas restablecido, stock de hamburguesas, salchipapas y bebidas conservado.'})
+    return jsonify({'status': 'success', 'message': '¡Jornada cerrada correctamente y archivada!', 'reporte': reporte_txt})
 
 @app.route('/logout')
 def logout():
