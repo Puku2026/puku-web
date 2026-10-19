@@ -7,9 +7,9 @@
             <!-- Pestañas del Menú -->
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item"><button class="nav-link active bg-warning text-dark font-weight-bold me-1" id="tab-broaste" data-bs-toggle="pill" data-bs-target="#broaste">Broaste</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-brasa" data-bs-toggle="pill" data-bs-target="#brasa">A la Brasa</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-brasa" data-bs-toggle="pill" data-bs-target="#brasa">🍗 A la Brasa</button></li>
                 <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-especiales" data-bs-toggle="pill" data-bs-target="#especiales">Especiales</button></li>
-                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-sodas" data-bs-toggle="pill" data-bs-target="#sodas">Sodas</button></li>
+                <li class="nav-item"><button class="nav-link bg-secondary text-light font-weight-bold me-1" id="tab-sodas" data-bs-toggle="pill" data-bs-target="#sodas">🥤 Sodas</button></li>
             </ul>
             <div class="tab-content" id="pills-tabContent">
                 <!-- Broaste -->
@@ -44,9 +44,9 @@
                 <!-- Sodas -->
                 <div class="tab-pane fade" id="sodas">
                     <div class="row g-2">
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Soda Peke', 3)" class="btn btn-success w-100 py-3 fw-bold">Soda Peke<br>3 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Soda Personal', 7)" class="btn btn-success w-100 py-3 fw-bold">Soda Personal<br>7 Bs</button></div>
-                        <div class="col-6 col-md-3"><button onclick="agregarAlCarrito('Soda 2 Litros', 15)" class="btn btn-success w-100 py-3 fw-bold">Soda 2 Litros<br>15 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Pekes', 3.0)" class="btn btn-success w-100 py-4 fw-bold">🥤 Pekes<br>3.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('Personales', 7.0)" class="btn btn-primary w-100 py-4 fw-bold">🥤 Personales<br>7.00 Bs</button></div>
+                        <div class="col-6 col-md-4"><button onclick="abrirSelectorSoda('2 Litros', 15.0)" class="btn btn-purple w-100 py-4 fw-bold text-white" style="background-color: #7209b7;">🥤 2 Litros<br>15.00 Bs</button></div>
                     </div>
                 </div>
             </div>
@@ -100,9 +100,9 @@
             </div>
             <button onclick="cobrarPedido()" class="btn btn-success w-100 font-weight-bold py-2 mt-3 fs-5">✓ Confirmar y Cobrar</button>
         </div>
-        <!-- CONTROL DE STOCK SECUNDARIO Y ROLES -->
+        <!-- CONTROL DE STOCK -->
         <div class="card card-dark p-3">
-            <h6 class="text-info mb-2">📦 Stock de Cocina (Presas)</h6>
+            <h6 class="text-info mb-2">📦 Stock Cocina y Bebidas</h6>
             <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
                 <span>Pecho: <strong id="st-Pecho">{{ stock['Pecho'] }}</strong></span>
                 <div>
@@ -110,39 +110,90 @@
                     <button onclick="modificarStock('Pecho', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
                 </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center fs-7 mb-2">
+            <div class="d-flex justify-content-between align-items-center fs-7 mb-1">
                 <span>Pierna: <strong id="st-Pierna">{{ stock['Pierna'] }}</strong></span>
                 <div>
                     <button onclick="modificarStock('Pierna', -1)" class="btn btn-danger btn-sm py-0 px-2">-</button>
                     <button onclick="modificarStock('Pierna', 1)" class="btn btn-success btn-sm py-0 px-2">+</button>
                 </div>
             </div>
-            <h6 class="text-info mt-2 mb-2">🥤 Stock Sodas / Bebidas</h6>
-            <div class="d-flex justify-content-between align-items-center fs-7">
-                <span>Pekes: <strong id="st-Sodas Pekes">{{ stock['Sodas Pekes'] }}</strong></span>
-                <div>
-                    <button onclick="modificarStock('Sodas Pekes', -1)" class="btn btn-danger btn-sm py-0 px-2" {% if rol != 'admin' %}disabled{% endif %}>-</button>
-                    <button onclick="modificarStock('Sodas Pekes', 1)" class="btn btn-success btn-sm py-0 px-2" {% if rol != 'admin' %}disabled{% endif %}>+</button>
-                </div>
-            </div>
-            {% if rol != 'admin' %}
-                <small class="text-danger mt-1" style="font-size: 0.75rem;">* Sodas bloqueadas para Cajero</small>
-            {% endif %}
         </div>
     </div>
 </div>
+
+<!-- MODAL PARA SELECCIONAR SABOR DE SODA -->
+<div class="modal fade" id="modalSaborSoda" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-info" id="tituloModalSabor">Seleccionar Sabor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2" id="listaSaboresGrid">
+          <!-- Botones de sabores generados por JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 let carrito = [];
-function agregarAlCarrito(nombre, precio) {
-    let item = carrito.find(i => i.nombre === nombre);
+const saboresDisponibles = [
+    "Coca Cola", "Coca Cola Zero", "Sprite", "Fanta Naranja", 
+    "Fanta Mandarina", "Fanta Guaraná", "Fanta Papaya", "Fanta Uva", 
+    "Acuarius Pera", "Acuarius Pomelo", "Oro", "Inka Kola", 
+    "Del Valle Manzana", "Del Valle Guayaba", "Del Valle Naranja"
+];
+
+function agregarAlCarrito(nombre, precio, categoriaSoda = null, saborSoda = null) {
+    let nombreMostrar = saborSoda ? `${nombre} (${saborSoda})` : nombre;
+    let item = carrito.find(i => i.nombre === nombreMostrar);
     if (item) {
         item.cant++;
         item.subtotal = item.cant * precio;
     } else {
-        carrito.push({ nombre: nombre, precio: precio, cant: 1, subtotal: precio });
+        carrito.push({ 
+            nombre: nombreMostrar, 
+            nombre_base: nombre,
+            precio: precio, 
+            cant: 1, 
+            subtotal: precio,
+            categoria_soda: categoriaSoda,
+            sabor_soda: saborSoda
+        });
     }
     renderizarCarrito();
 }
+
+function abrirSelectorSoda(categoria, precio) {
+    document.getElementById("tituloModalSabor").innerText = `Seleccionar Sabor - ${categoria} (${precio} Bs)`;
+    let grid = document.getElementById("listaSaboresGrid");
+    grid.innerHTML = "";
+    
+    saboresDisponibles.forEach(sabor => {
+        grid.innerHTML += `
+            <div class="col-6">
+                <button onclick="elegirSaborSoda('${categoria}', '${sabor}', ${precio})" class="btn btn-outline-light w-100 py-2 text-start mb-1 text-truncate">
+                    ${sabor}
+                </button>
+            </div>
+        `;
+    });
+    
+    let modal = new bootstrap.Modal(document.getElementById('modalSaborSoda'));
+    modal.show();
+}
+
+function elegirSaborSoda(categoria, sabor, precio) {
+    let nombreBase = `Soda ${categoria}`;
+    agregarAlCarrito(nombreBase, precio, categoria, sabor);
+    let modalEl = document.getElementById('modalSaborSoda');
+    let modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+}
+
 function renderizarCarrito() {
     let tbody = document.getElementById("tabla-carrito");
     tbody.innerHTML = "";
@@ -160,14 +211,17 @@ function renderizarCarrito() {
     });
     document.getElementById("total-txt").innerText = `Total: ${total.toFixed(2)} Bs`;
 }
+
 function eliminarItem(index) {
     carrito.splice(index, 1);
     renderizarCarrito();
 }
+
 function vaciarCarrito() {
     carrito = [];
     renderizarCarrito();
 }
+
 function cobrarPedido() {
     if (carrito.length === 0) {
         alert("El carrito está vacío.");
@@ -193,6 +247,7 @@ function cobrarPedido() {
         document.getElementById("cliente").value = "";
     });
 }
+
 function modificarStock(item, delta) {
     fetch("/api/stock/update", {
         method: "POST",
